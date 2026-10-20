@@ -1,0 +1,38 @@
+{
+  "name": "dynamic-island",
+  "version": "0.1.0",
+  "description": "A dynamic island for Windows, built with Electron",
+  "author": "Dynamic Island",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "DynamicIsland",
+    "productName": "Dynamic Island",
+    "asarUnpack": [
+      "*.ps1"
+    ],
+    "files": [
+      "**/*",
+      "!dist${/*}",
+      "!images${/*}"
+    ],
+    "win": {
+      "icon": "assets/icon.png",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Dynamic Island"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3"
+  }
+}

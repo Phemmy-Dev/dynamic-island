@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+  <title>Dynamic Island Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <main>
+    <h1>Dynamic Island</h1>
+    <p class="hint">Changes apply straight away and are saved automatically.</p>
+
+    <section>
+      <h2>Appearance</h2>
+      <div class="row">
+        <label for="opacity">Background opacity</label>
+        <div class="control">
+          <input id="opacity" type="range" min="40" max="100" step="5">
+          <output id="opacity-value"></output>
+        </div>
+      </div>
+      <div class="row">
+        <span class="label">Accent colour</span>
+        <div class="control segmented" role="radiogroup">
+          <label><input type="radio" name="accent" value="album"> From album art</label>
+          <label><input type="radio" name="accent" value="fixed"> Fixed</label>
+          <input id="accent-color" type="color" title="Fixed accent colour">
+        </div>
+      </div>
+      <div class="row">
+        <label for="left-wing">Collapsed left side shows</label>
+        <div class="control">
+          <select id="left-wing">
+            <option value="battery">Battery</option>
+            <option value="weather">Weather</option>
+            <option value="date">Date</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Views</h2>
+      <p class="hint">Scroll over the island to move between these, top to bottom. Now playing only appears while something is playing.</p>
+      <ul id="views" class="views"></ul>
+    </section>
+
+    <section>
+      <h2>Auto-hide</h2>
+      <div class="row">
+        <label for="tuck-mode">Tuck the island away</label>
+        <div class="control">
+          <select id="tuck-mode">
+            <option value="browsers">Over the apps below</option>
+            <option value="always">Over any app</option>
+            <option value="never">Never</option>
+          </select>
+        </div>
+      </div>
+      <div class="row column">
+        <label for="tuck-apps">Apps (process names from Task Manager › Details, one per line)</label>
+        <textarea id="tuck-apps" rows="4" spellcheck="false"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>Lyrics</h2>
+      <div class="row">
+        <label for="lyrics-offset">Timing</label>
+        <div class="control">
+          <input id="lyrics-offset" type="range" min="-2000" max="2000" step="50">
+          <output id="lyrics-offset-value"></output>
+        </div>
+      </div>
+      <p class="hint">Move right if lyrics appear late, left if they appear early.</p>
+    </section>
+
+    <section>
+      <h2>Weather</h2>
+      <div class="row">
+        <label for="weather-city">City</label>
+        <div class="control">
+          <input id="weather-city" type="text" placeholder="e.g. Lagos" autocomplete="off">
+        </div>
+      </div>
+      <div class="row">
+        <label for="weather-units">Units</label>
+        <div class="control">
+          <select id="weather-units">
+            <option value="celsius">°C</option>
+            <option value="fahrenheit">°F</option>
+          </select>
+        </div>
+      </div>
+      <p id="weather-status" class="hint"></p>
+      <p class="hint">Weather comes from Open-Meteo (free, no account). Only the city you type here is sent to it. Leave the city empty to turn weather off.</p>
+    </section>
+
+    <section>
+      <h2>System</h2>
+      <div class="row">
+        <label for="startup">Start with Windows</label>
+        <div class="control"><input id="startup" type="checkbox" class="switch"></div>
+      </div>
+      <p class="hint">Quit from the tray icon (bottom right of the taskbar).</p>
+    </section>
+  </main>
+  <script src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,881 @@
+:root {
+  --collapsed-w: 232px;
+  --collapsed-h: 32px;
+  --peek-w: 272px;
+  --expanded-w: 400px;
+  --overview-h: 150px;
+  --media-h: 176px;
+  --command-h: 184px;
+  --calendar-h: 200px;
+  --notes-h: 176px;
+  --lyrics-w: 670px;       /* media view width with lyrics open */
+  --shoulder: 10px;          /* size of the concave curve joining the screen edge */
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --duration: 300ms;
+  --accent: #9ae6b4;         /* replaced with a colour taken from the album art */
+  --muted: rgba(255, 255, 255, 0.55);
+  --battery-fill: #fff;
+  --island-bg: #000;         /* set from the opacity setting */
+  --art-tint: #000;          /* dark shade of the album art colour */
+}
+
+/* Registered so the album-art tint fades between songs instead of jumping. */
+@property --art-tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #000;
+}
+
+:root { transition: --art-tint 800ms ease; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ---------- Notch shape ---------- */
+
+.island { position: relative; }
+
+/* Concave shoulders either side of the pill, so it flows out of the screen edge. */
+.island::before,
+.island::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--shoulder);
+  height: var(--shoulder);
+  transition: width var(--duration) var(--spring), height var(--duration) var(--spring);
+}
+
+.island::before {
+  right: 100%;
+  background: radial-gradient(circle farthest-side at 0 100%, transparent 96%, var(--island-bg) 100%);
+}
+
+.island::after {
+  left: 100%;
+  background: radial-gradient(circle farthest-side at 100% 100%, transparent 96%, var(--island-bg) 100%);
+}
+
+.island:has(.pill.expanded) { --shoulder: 16px; }
+
+.pill {
+  position: relative;
+  width: var(--collapsed-w);
+  height: var(--collapsed-h);
+  background: var(--island-bg);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    width var(--duration) var(--spring),
+    height var(--duration) var(--spring),
+    border-radius var(--duration) var(--spring);
+}
+
+.pill.peeking { width: var(--peek-w); }
+
+/* Tucked: a thin sliver while an app window is under the island. */
+.pill.tucked:not(.expanded):not(.peeking) {
+  width: 160px;
+  height: 5px;
+  border-radius: 0 0 5px 5px;
+}
+
+.pill.tucked:not(.expanded):not(.peeking) .collapsed-view { opacity: 0; }
+.island:has(.pill.tucked:not(.expanded):not(.peeking)) { --shoulder: 4px; }
+
+.pill.expanded {
+  width: var(--expanded-w);
+  height: var(--overview-h);
+  border-radius: 0 0 30px 30px;
+}
+
+.pill.expanded[data-view="media"] { height: var(--media-h); }
+.pill.expanded.lyrics-open[data-view="media"] { width: var(--lyrics-w); }
+
+/* Album-art tint behind the island while lyrics are showing. */
+.pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, transparent 20%, var(--art-tint) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+
+.pill.expanded.lyrics-open[data-view="media"]::before { opacity: 1; }
+.pill.expanded[data-view="command"] { height: var(--command-h); }
+.pill.expanded[data-view="calendar"] { height: var(--calendar-h); }
+.pill.expanded[data-view="notes"] { height: var(--notes-h); }
+
+.collapsed-view,
+.expanded-view {
+  position: absolute;
+  inset: 0;
+  transition: opacity 180ms ease, transform var(--duration) var(--spring);
+}
+
+.expanded-view {
+  opacity: 0;
+  transform: scale(0.94);
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.pill.expanded .collapsed-view { opacity: 0; pointer-events: none; }
+.pill.expanded .expanded-view {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 60ms;
+}
+
+/* Visibility switches driven by classes on .pill */
+.pill:not(.has-battery) .battery-only,
+.pill:not(.wing-battery) .left-battery,
+.pill:not(.wing-weather) .left-weather,
+.pill:not(.wing-date) .left-date,
+.ov-weather:empty,
+.pill.playing .stat-wing,
+.pill:not(.playing) .media-wing,
+.pill:not(.timer-active) .timer-wing,
+.pill.timer-active .wing-right .stat-wing,
+.pill.timer-active .wing-right .media-wing { display: none !important; }
+
+.timer-wing .glyph { width: 15px; height: 15px; }
+.pill.timer-paused .timer-wing { opacity: 0.55; }
+
+/* ---------- Collapsed: wings ---------- */
+
+.wings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 14px;
+  transition: opacity 160ms ease;
+}
+
+.wing { display: flex; align-items: center; }
+.wing-left { justify-self: start; }
+.wing-right { justify-self: end; }
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.clock-small {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.icon { display: block; width: 16px; height: 16px; color: #fff; }
+.battery-icon { width: 22px; height: 12px; }
+
+/* ---------- Collapsed: peek (volume / charging) ---------- */
+
+.peek {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 160ms ease, transform var(--duration) var(--spring);
+}
+
+.pill.peeking .wings { opacity: 0; }
+.pill.peeking .peek { opacity: 1; transform: none; }
+
+.peek-icon .icon { width: 18px; height: 18px; }
+.peek-icon .battery-icon { width: 24px; height: 13px; }
+
+.peek-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.peek-fill {
+  height: 100%;
+  width: 0;
+  background: #fff;
+  border-radius: 3px;
+  transition: width 150ms ease;
+}
+
+.peek-value {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ---------- Expanded: views ---------- */
+
+.view {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform var(--duration) var(--spring);
+}
+
+.view.before { transform: translateY(-16px); }
+
+.view.active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.view-dots {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.view-dots i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 200ms ease, height 200ms ease;
+}
+
+.view-dots i.active { background: #fff; height: 12px; border-radius: 3px; }
+
+/* Dots are clickable; give each a bigger invisible hit area. */
+.view-dots i { position: relative; cursor: pointer; }
+.view-dots i::before { content: ""; position: absolute; inset: -3px -8px; }
+.view-dots i:not(.active):hover { background: rgba(255, 255, 255, 0.6); }
+
+.sub { font-size: 12px; color: var(--muted); }
+
+/* ---------- Overview view ---------- */
+
+.view[data-view="overview"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 30px 18px 26px;
+}
+
+.ov-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clock-large {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.date { font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+
+.ov-weather {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ov-weather .glyph, .left-weather .glyph { width: 16px; height: 16px; }
+
+.ov-battery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: right;
+}
+
+.ov-battery-icon .battery-icon { width: 34px; height: 18px; }
+
+.ov-battery-pct {
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-value { min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.row-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.glyph {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right, #fff var(--fill, 0%), rgba(255, 255, 255, 0.2) var(--fill, 0%));
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6);
+  transition: transform 120ms ease;
+}
+
+.slider:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+/* ---------- Media view ---------- */
+
+.view[data-view="media"] {
+  right: auto;
+  width: var(--expanded-w);  /* fixed, so the card doesn't stretch when lyrics widen the island */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 30px 12px 22px;
+}
+
+.media-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px;
+}
+
+.clock-header {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.date-header { font-size: 12px; color: var(--muted); }
+
+.art {
+  object-fit: cover;
+  background: linear-gradient(135deg, #3a3a3c, #1c1c1e);
+}
+
+/* Music-note placeholder when there's no artwork. */
+.art:not([src]), .art[src=""] { content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M10 17.5a2.5 2.5 0 1 1-2-2.45V6l9-2v10.5a2.5 2.5 0 1 1-2-2.45V7.1l-5 1.1z'/%3E%3C/svg%3E"); padding: 4px; }
+
+.art-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.art-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.track-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.track-title,
+.track-artist,
+.track-app {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-title { font-size: 15px; font-weight: 600; }
+.track-artist { font-size: 13px; color: var(--muted); }
+.track-app { font-size: 11px; color: rgba(255, 255, 255, 0.35); }
+
+/* Equalizer bars: animate while playing, rest flat while paused. */
+.bars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+  width: 20px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bars i {
+  display: block;
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleY(0.25);
+  transition: background 400ms ease;
+}
+
+.pill.playing .bars i { animation: eq 0.9s ease-in-out infinite alternate; }
+.pill.playing .bars i:nth-child(2) { animation-duration: 0.7s; animation-delay: -0.3s; }
+.pill.playing .bars i:nth-child(3) { animation-duration: 1.1s; animation-delay: -0.5s; }
+.pill.playing .bars i:nth-child(4) { animation-duration: 0.8s; animation-delay: -0.2s; }
+
+@keyframes eq {
+  0% { transform: scaleY(0.2); }
+  100% { transform: scaleY(1); }
+}
+
+.bars-large { height: 22px; width: 26px; }
+.bars-large i { width: 3.5px; }
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress.hidden { visibility: hidden; }
+
+.time {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+}
+
+.time:last-child { text-align: right; }
+
+.progress-track {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: height 150ms ease;
+}
+
+/* Taller invisible hit area so the thin bar is easy to grab. */
+.progress.seekable .progress-track { cursor: pointer; touch-action: none; }
+.progress.seekable .progress-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -9px;
+  bottom: -9px;
+}
+
+.progress.seekable .progress-track:hover,
+.progress-track.scrubbing { height: 6px; }
+
+.progress-fill {
+  position: relative;
+  height: 100%;
+  width: 0;
+  background: #fff;
+  border-radius: 2px;
+}
+
+/* Knob at the end of the fill, shown while hovering or dragging. */
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateY(-50%) scale(0);
+  transition: transform 150ms ease;
+}
+
+.progress.seekable .progress-track:hover .progress-fill::after,
+.progress-track.scrubbing .progress-fill::after { transform: translateY(-50%) scale(1); }
+
+/* ---------- Buttons ---------- */
+
+.controls {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  margin-top: -4px;
+}
+
+.ctrl {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 150ms ease, transform 120ms ease, opacity 150ms ease;
+}
+
+.ctrl:hover { background: rgba(255, 255, 255, 0.12); }
+.ctrl:active { transform: scale(0.88); }
+.ctrl:disabled { opacity: 0.3; pointer-events: none; }
+
+.ctrl > svg { width: 20px; height: 20px; fill: currentColor; }
+.ctrl-main > svg { width: 26px; height: 26px; }
+.ctrl > svg.glyph { width: 18px; height: 18px; fill: none; }
+.ctrl-small { width: 28px; height: 28px; }
+.ctrl-small .icon { width: 18px; height: 18px; }
+
+.icon-pause { display: none; }
+.pill.playing .icon-play { display: none; }
+.pill.playing .icon-pause { display: block; }
+
+/* ---------- Command centre view ---------- */
+
+.view[data-view="command"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 30px 14px 22px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+}
+
+.tile:hover { background: rgba(255, 255, 255, 0.16); }
+.tile:active { transform: scale(0.96); }
+.tile:disabled { opacity: 0.4; pointer-events: none; }
+.tile .glyph { flex-shrink: 0; }
+
+.tile.on { background: #fff; color: #000; }
+.tile.on .tile-sub { color: rgba(0, 0, 0, 0.55); }
+.tile.pending { opacity: 0.7; }
+
+.tile-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tile-title { font-size: 12px; font-weight: 600; }
+
+.tile-sub {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shortcuts {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+/* ---------- Calendar + timer view ---------- */
+
+.view[data-view="calendar"] {
+  display: flex;
+  gap: 18px;
+  padding: 10px 30px 14px 20px;
+}
+
+.calendar { width: 196px; flex-shrink: 0; }
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.ctrl-tiny { width: 24px; height: 24px; }
+.ctrl-tiny > svg.glyph { width: 14px; height: 14px; }
+
+.cal-title {
+  border: none;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.cal-title:hover { background: rgba(255, 255, 255, 0.1); }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+
+.cal-weekdays {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 2px;
+}
+
+.cal-days span {
+  font-size: 11px;
+  line-height: 22px;
+  height: 22px;
+  width: 22px;
+  margin: 0 auto;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-days span.other { color: rgba(255, 255, 255, 0.25); }
+.cal-days span.today { background: #fff; color: #000; font-weight: 700; }
+
+.timer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.timer-display {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  cursor: ns-resize;
+}
+
+.pill.timer-paused .timer-display { opacity: 0.55; }
+.timer-display.done { animation: flash 0.5s ease-in-out 6 alternate; }
+
+@keyframes flash {
+  from { color: #fff; }
+  to { color: var(--accent); }
+}
+
+.timer-buttons { display: flex; gap: 8px; }
+
+.timer-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.chip {
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, transform 120ms ease;
+}
+
+.chip:hover { background: rgba(255, 255, 255, 0.2); }
+.chip:active { transform: scale(0.94); }
+.chip-primary { background: #fff; color: #000; min-width: 64px; }
+.chip-primary:hover { background: rgba(255, 255, 255, 0.85); }
+.timer-presets .chip { padding: 4px 0; font-size: 11px; }
+
+/* ---------- Notes view ---------- */
+
+.view[data-view="notes"] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 30px 16px 22px;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px;
+}
+
+.notes-title { font-size: 13px; font-weight: 600; }
+
+.notes {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  user-select: text;
+  transition: background 150ms ease;
+}
+
+.notes:focus { background: rgba(255, 255, 255, 0.12); }
+.notes::placeholder { color: rgba(255, 255, 255, 0.35); }
+.notes::-webkit-scrollbar { width: 6px; }
+.notes::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+
+/* ---------- Lyrics ---------- */
+
+.lyrics-btn { position: absolute; left: 0; }
+.lyrics-btn.active { background: #fff; color: #000; }
+.lyrics-btn.active:hover { background: rgba(255, 255, 255, 0.85); }
+
+.lyrics {
+  position: absolute;
+  left: 392px;
+  width: 236px;
+  top: 12px;
+  bottom: 12px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
+}
+
+.pill.lyrics-open .lyrics {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 120ms;
+}
+
+.lyrics-lines { transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+.lyrics-line {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 4px 16px 4px 0;  /* room for the current line's scale-up */
+  color: rgba(255, 255, 255, 0.35);
+  transform-origin: left center;
+  transition: color 300ms ease, transform 300ms ease;
+}
+
+.lyrics-line.current { color: #fff; transform: scale(1.06); }
+
+/* Synced lines are clickable (jump to that line) when the player allows seeking. */
+.pill.can-seek .lyrics:not(.plain) .lyrics-line { cursor: pointer; }
+.pill.can-seek .lyrics:not(.plain) .lyrics-line:not(.current):hover { color: rgba(255, 255, 255, 0.65); }
+
+/* Unsynced lyrics: plain scrollable text. */
+.lyrics.plain {
+  overflow-y: auto;
+  -webkit-mask-image: none;
+}
+
+.lyrics.plain .lyrics-line { color: rgba(255, 255, 255, 0.8); font-weight: 500; }
+.lyrics.plain::-webkit-scrollbar { width: 6px; }
+.lyrics.plain::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+
+.lyrics-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.lyrics-status:empty { display: none; }
