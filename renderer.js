@@ -113,6 +113,7 @@ function setView(name) {
 }
 
 function stepView(direction) {
+  holdFootprint();
   const views = availableViews();
   const index = views.indexOf(currentView);
   setView(views[(index + direction + views.length) % views.length]);
@@ -125,6 +126,7 @@ $('view-dots').addEventListener('click', (e) => {
   const dot = e.target.closest('i[data-view]');
   if (!dot) return;
   e.stopPropagation();  // don't pin/unpin the island
+  holdFootprint();
   setView(dot.dataset.view);
 });
 
@@ -143,6 +145,7 @@ function expand() {
 
 function collapse() {
   pinned = false;
+  heldRect = null;
   pill.classList.remove('expanded');
   reportRect();
 }
@@ -151,16 +154,46 @@ function collapse() {
 // While tucked, the main process waits for the cursor to rest before reacting,
 // so quick clicks fall through to the window underneath.
 function reportRect() {
-  const r = pill.getBoundingClientRect();
+  let r = pill.getBoundingClientRect();
+  if (heldRect) {
+    const left = Math.min(r.left, heldRect.left);
+    const top = Math.min(r.top, heldRect.top);
+    r = {
+      x: left,
+      y: top,
+      width: Math.max(r.right, heldRect.right) - left,
+      height: Math.max(r.bottom, heldRect.bottom) - top,
+    };
+  }
   const tucked = pill.classList.contains('tucked') && !isExpanded();
   window.island.reportPillRect({ x: r.x, y: r.y, width: r.width, height: r.height, tucked });
+}
+
+// The island stays centred, so when you make it narrower (closing lyrics,
+// switching away from the lyrics view) it can shrink out from under the
+// cursor, which would count as "mouse left" and close it. Call this just
+// before such a change: the old footprint keeps counting as hovered until
+// the mouse actually leaves it.
+let heldRect = null;
+
+function holdFootprint() {
+  if (!isExpanded()) return;
+  const r = pill.getBoundingClientRect();
+  heldRect = heldRect
+    ? { left: Math.min(r.left, heldRect.left), top: Math.min(r.top, heldRect.top), right: Math.max(r.right, heldRect.right), bottom: Math.max(r.bottom, heldRect.bottom) }
+    : { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
 }
 new ResizeObserver(reportRect).observe(pill);
 reportRect();
 
 window.island.onHover((inside) => {
-  if (inside) expand();
-  else if (!pinned) collapse();
+  if (inside) {
+    expand();
+  } else {
+    heldRect = null;
+    if (!pinned) collapse();
+    else reportRect();
+  }
 });
 
 pill.addEventListener('click', () => {

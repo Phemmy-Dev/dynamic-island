@@ -121,7 +121,10 @@
     else if (open) sync(true);
   }
 
-  button.addEventListener('click', () => setOpen(!open));
+  button.addEventListener('click', () => {
+    holdFootprint();  // closing lyrics shrinks the island; don't let it slip out from under the cursor
+    setOpen(!open);
+  });
 
   setInterval(() => {
     if (!open || !hasMedia()) return;

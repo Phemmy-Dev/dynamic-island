@@ -1,6 +1,6 @@
 {
   "name": "dynamic-island",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A dynamic island for Windows, built with Electron",
   "author": "Dynamic Island",
   "main": "main.js",
