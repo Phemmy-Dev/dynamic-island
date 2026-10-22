@@ -1,7 +1,8 @@
 # System helper. Reports volume, battery, brightness, Wi-Fi/Bluetooth radios,
 # the network, and which app window sits under the island, as JSON lines on
 # change. Accepts commands on stdin:
-#   "volume <0..1>", "mute", "brightness <0..100>", "radio <wifi|bluetooth> <on|off>"
+#   "volume <0..1>", "mute", "brightness <0..100>", "radio <wifi|bluetooth> <on|off>",
+#   "focus <process name>"
 
 
 $ErrorActionPreference = 'Stop'
@@ -76,6 +77,32 @@ public static class IslandWindows {
   [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr hwnd, StringBuilder name, int max);
   [DllImport("dwmapi.dll")] static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out int value, int size);
   [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+  [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hwnd);
+  [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int cmd);
+  [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr hwnd, uint cmd);
+  [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr hwnd);
+
+  // Brings the first titled, unowned, on-screen window of these processes to
+  // the front (restoring it if minimized). False if they have none.
+  // Allowed because this helper was started by the island, which is the
+  // foreground app right after you click it.
+  public static bool Focus(uint[] pids) {
+    IntPtr target = IntPtr.Zero;
+    EnumWindows((hwnd, lParam) => {
+      if (!IsWindowVisible(hwnd) || GetWindow(hwnd, 4 /* GW_OWNER */) != IntPtr.Zero || GetWindowTextLength(hwnd) == 0) return true;
+      uint pid;
+      GetWindowThreadProcessId(hwnd, out pid);
+      if (Array.IndexOf(pids, pid) < 0) return true;
+      int cloaked;
+      if (DwmGetWindowAttribute(hwnd, 14, out cloaked, 4) == 0 && cloaked != 0) return true;
+      target = hwnd;
+      return false;
+    }, IntPtr.Zero);
+    if (target == IntPtr.Zero) return false;
+    if (IsIconic(target)) ShowWindow(target, 9 /* SW_RESTORE */);
+    SetForegroundWindow(target);
+    return true;
+  }
 
   [StructLayout(LayoutKind.Sequential)] struct RECT { public int Left, Top, Right, Bottom; }
 
@@ -260,6 +287,15 @@ while ($true) {
       $parts = $cmd.Trim().Split(' ')
       switch ($parts[0]) {
         'brightness' { $brightnessTarget = [Math]::Max(0, [Math]::Min(100, [int]$parts[1])) }
+        # Bring an app to the front by process name (the "open what's playing" click).
+        'focus' {
+          $procs = @(Get-Process -Name $cmd.Trim().Substring(6) -ErrorAction SilentlyContinue)
+          if ($procs -and -not [IslandWindows]::Focus([uint32[]]@($procs | ForEach-Object { $_.Id }))) {
+            # No window on screen (e.g. Spotify closed to the tray): launching it again brings it back.
+            $exe = ($procs | Where-Object { $_.Path } | Select-Object -First 1).Path
+            if ($exe) { Start-Process $exe }
+          }
+        }
         'radio' {
           if ($parts[1] -in @('wifi', 'bluetooth')) { Set-Radio $parts[1] ($parts[2] -eq 'on') }
           $refreshSlow = $true

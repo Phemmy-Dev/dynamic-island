@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('media', {
   // command: 'toggle' | 'next' | 'prev'
   send: (command) => ipcRenderer.send('media:command', command),
   seek: (positionMs) => ipcRenderer.send('media:seek', positionMs),
+  openSource: () => ipcRenderer.send('media:open-source'),
   // track: { title, artist, album, durationMs } -> { synced, plain, instrumental } | { none } | { error }
   getLyrics: (track) => ipcRenderer.invoke('lyrics:get', track),
 });

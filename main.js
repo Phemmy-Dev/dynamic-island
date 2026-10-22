@@ -119,6 +119,21 @@ ipcMain.on('media:command', (_event, command) => {
   if (media && ['toggle', 'next', 'prev'].includes(command)) media.send(command);
 });
 
+// Bring the app that's playing to the front. Uses the source app the media
+// helper reported, not anything from the page.
+ipcMain.on('media:open-source', () => {
+  const source = (lastMessages.get('state') || {}).app;
+  if (!source || !/^[\w .!-]+$/.test(source)) return;
+  if (source.includes('!')) {
+    // Store apps (e.g. Media Player) are opened by their app ID.
+    spawn('explorer.exe', [`shell:AppsFolder\\${source}`], { detached: true, stdio: 'ignore' }).unref();
+  } else if (system) {
+    // Desktop apps report their exe ("Spotify.exe") or name ("Brave", "MSEdge").
+    // shortcut: apps with a hashed ID (Firefox) won't match a process; map them if anyone asks.
+    system.send(`focus ${source.replace(/\.exe$/i, '')}`);
+  }
+});
+
 ipcMain.on('media:seek', (_event, positionMs) => {
   if (media && Number.isFinite(positionMs) && positionMs >= 0) media.send(`seek ${Math.round(positionMs)}`);
 });

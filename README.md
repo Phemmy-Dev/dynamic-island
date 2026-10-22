@@ -124,6 +124,7 @@ Scroll over the open island, or click the dots, to move between these. You can h
 *Only shows up when something is playing (or paused).*
 
 - The album art, song name, artist, and which app it's coming from.
+- **Click the album art or song name** to jump straight to the app that's playing (Spotify, your browser, …). For browsers it brings up the browser window, but Windows doesn't say *which tab* is playing, so you may still need to find the tab.
 - **Previous, play/pause and next** buttons.
 - **The progress bar:** hover over it and it grows a little knob. Click or drag anywhere on it to jump to that part of the song. (This works when the music app allows it. Spotify does; some websites don't.)
 - **Lyrics** (the little speech-bubble button, bottom left):

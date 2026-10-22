@@ -576,6 +576,7 @@ function renderMedia() {
   $('track-title').textContent = nowPlaying.title;
   $('track-artist').textContent = nowPlaying.artist || nowPlaying.album || '';
   $('track-app').textContent = appName(nowPlaying.app);
+  trackEl.title = `Open ${appName(nowPlaying.app)}`;
   $('btn-prev').disabled = !nowPlaying.canPrev;
   $('btn-next').disabled = !nowPlaying.canNext;
   $('btn-toggle').disabled = !nowPlaying.canToggle;
@@ -719,6 +720,14 @@ function onArtwork(data) {
   });
   applyAccent(data);
 }
+
+// Click the artwork or title to jump to the app that's playing.
+const trackEl = document.querySelector('.view[data-view="media"] .track');
+trackEl.addEventListener('click', (e) => {
+  e.stopPropagation();  // don't pin the island
+  window.media.openSource();
+  collapse();
+});
 
 $('btn-prev').addEventListener('click', () => window.media.send('prev'));
 $('btn-next').addEventListener('click', () => window.media.send('next'));
