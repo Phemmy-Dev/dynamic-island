@@ -20,6 +20,8 @@ const DEFAULTS = {
   weatherCity: '',
   weatherUnits: 'celsius',          // 'celsius' | 'fahrenheit'
   ambient: true,                    // Now Playing screen (idle, button, Ctrl+Alt+M)
+  ambientBg: 'art',                 // its background: 'art' (recognisable cover) | 'glow' (colours only)
+  ambientIdleMin: 2,                // minutes idle (with music playing) before it opens by itself
 };
 
 // Each validator returns the cleaned value, or undefined to reject it.
@@ -55,6 +57,8 @@ const VALIDATORS = {
   weatherCity: (v) => (typeof v === 'string' ? v.trim().slice(0, 80) : undefined),
   weatherUnits: (v) => (['celsius', 'fahrenheit'].includes(v) ? v : undefined),
   ambient: (v) => (typeof v === 'boolean' ? v : undefined),
+  ambientBg: (v) => (['glow', 'art'].includes(v) ? v : undefined),
+  ambientIdleMin: (v) => (Number.isFinite(v) ? Math.round(Math.min(30, Math.max(1, v))) : undefined),
 };
 
 const file = () => path.join(app.getPath('userData'), 'settings.json');

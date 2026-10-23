@@ -179,6 +179,8 @@ function render(s) {
   $('lyrics-offset-value').textContent = formatOffset(s.lyricsOffsetMs);
   setIfIdle($('weather-city'), s.weatherCity);
   $('ambient').checked = s.ambient;
+  setIfIdle($('idle-min'), s.ambientIdleMin);
+  $('idle-min-value').textContent = `${s.ambientIdleMin} min`;
   renderPreview();
 }
 
@@ -213,6 +215,7 @@ $('weather-city').addEventListener('change', (e) => api.set({ weatherCity: e.tar
 $('weather-city').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 $('startup').addEventListener('change', (e) => api.setStartWithWindows(e.target.checked));
 $('ambient').addEventListener('change', (e) => api.set({ ambient: e.target.checked }));
+$('idle-min').addEventListener('input', (e) => api.set({ ambientIdleMin: +e.target.value }));
 
 // Sidebar: show one section at a time.
 document.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {

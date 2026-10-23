@@ -9,7 +9,12 @@ let lyricsKey = null;
 let currentLine = -1;
 let offsetMs = 0;
 
-window.island.getSettings().then((s) => { offsetMs = s.lyricsOffsetMs || 0; });
+function applySettings(s) {
+  offsetMs = s.lyricsOffsetMs || 0;
+  document.body.classList.toggle('bg-art', s.ambientBg === 'art');
+}
+window.island.getSettings().then(applySettings);
+window.island.onSettings(applySettings);
 
 // ---------- Clock ----------
 
@@ -29,7 +34,13 @@ setInterval(tick, 1000);
 
 const hasMedia = () => np.active && !!np.title && np.status !== 'Closed' && np.status !== 'Stopped';
 
+// While dragging the progress bar, everything follows the drag position.
+let scrubMs = null;
+// After a seek, players keep reporting the old position for a moment.
+let lastSeek = { at: 0, ms: 0 };
+
 function position() {
+  if (scrubMs !== null) return scrubMs;
   let pos = np.positionMs || 0;
   if (np.status === 'Playing' && np.updatedAtMs) pos += Date.now() - np.updatedAtMs;
   return Math.min(pos, np.durationMs || pos);
@@ -43,6 +54,7 @@ function fmt(ms) {
 function renderProgress() {
   const ok = hasMedia() && np.durationMs > 0;
   document.querySelector('.progress').classList.toggle('hidden', !ok);
+  document.querySelector('.progress').classList.toggle('seekable', ok && !!np.canSeek);
   if (!ok) return;
   const pos = position();
   $('fill').style.width = `${(pos / np.durationMs) * 100}%`;
@@ -83,10 +95,46 @@ window.island.onHelperMessage((msg) => {
     else $('bg').removeAttribute('src');
     flipImage($('art'), msg.data);
   } else if (msg.type === 'state') {
+    if (Date.now() - lastSeek.at < 2000 && msg.title === np.title) {
+      msg.positionMs = lastSeek.ms + (msg.status === 'Playing' ? Date.now() - lastSeek.at : 0);
+      msg.updatedAtMs = Date.now();
+    }
     np = msg;
     render();
   }
 });
+
+// Click or drag along the progress bar to jump around the song.
+const track = document.querySelector('.progress .track');
+
+function scrubAt(e) {
+  const r = track.getBoundingClientRect();
+  scrubMs = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * np.durationMs;
+  renderProgress();
+}
+
+function endScrub() {
+  if (scrubMs === null) return;
+  const ms = scrubMs;
+  scrubMs = null;
+  track.classList.remove('scrubbing');
+  window.media.seek(ms);
+  lastSeek = { at: Date.now(), ms };
+  np.positionMs = ms;
+  np.updatedAtMs = Date.now();
+  renderProgress();
+  currentLine = -1;  // re-centre lyrics on the new spot
+}
+
+track.addEventListener('pointerdown', (e) => {
+  if (!np.canSeek || !(np.durationMs > 0)) return;
+  track.setPointerCapture(e.pointerId);
+  track.classList.add('scrubbing');
+  scrubAt(e);
+});
+track.addEventListener('pointermove', (e) => { if (scrubMs !== null) scrubAt(e); });
+track.addEventListener('pointerup', endScrub);
+track.addEventListener('lostpointercapture', endScrub);
 
 $('prev').addEventListener('click', () => window.media.send('prev'));
 $('next').addEventListener('click', () => window.media.send('next'));

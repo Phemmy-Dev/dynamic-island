@@ -161,6 +161,7 @@ ipcMain.on('system:set-radio', (_event, kind, on) => {
 // Command centre shortcuts. Only these fixed targets can be opened.
 const SHORTCUTS = {
   settings: () => shell.openExternal('ms-settings:'),
+  island: () => openSettings(),
   nightlight: () => shell.openExternal('ms-settings:nightlight'),
   power: () => shell.openExternal('ms-settings:batterysaver'),
   snip: () => shell.openExternal('ms-screenclip:'),
@@ -214,7 +215,7 @@ ipcMain.on('settings:set-startup', (_event, on) => setStartWithWindows(on));
 ipcMain.on('settings:open', () => openSettings());
 
 settingsStore.onChange((current, previous) => {
-  for (const w of [win, settingsWin]) if (w) w.webContents.send('settings:changed', current);
+  for (const w of [win, settingsWin, ambientWin]) if (w) w.webContents.send('settings:changed', current);
   if (!current.ambient) closeAmbient();
   if (current.weatherCity !== previous.weatherCity || current.weatherUnits !== previous.weatherUnits) {
     refreshWeather();
@@ -291,7 +292,6 @@ async function refreshWeather() {
 
 // Full-screen "lock screen" look: big clock, album art, lyrics. It doesn't
 // lock the PC (Windows keeps apps off the real lock screen).
-const AMBIENT_IDLE_SEC = 120;
 let screenLocked = false;
 
 function openAmbient() {
@@ -347,7 +347,7 @@ function checkIdleAmbient() {
   const sys = lastMessages.get('system');
   if (ambientWin || screenLocked || !media || media.status !== 'Playing') return;
   if (sys && sys.fullscreen) return;
-  if (powerMonitor.getSystemIdleTime() >= AMBIENT_IDLE_SEC) openAmbient();
+  if (powerMonitor.getSystemIdleTime() >= settingsStore.get().ambientIdleMin * 60) openAmbient();
 }
 
 // ---------- Tray ----------

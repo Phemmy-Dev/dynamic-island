@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('island', {
   onBlur: (callback) => ipcRenderer.on('island:blur', () => callback()),
   // Messages from the background helpers: { type: 'state' | 'artwork' | 'system', ... }
   onHelperMessage: (callback) => ipcRenderer.on('helper:message', (_event, msg) => callback(msg)),
-  // name: 'settings' | 'nightlight' | 'power' | 'snip' | 'lock'
+  // name: 'island' (this app's Settings) | 'settings' (Windows) | 'nightlight' | 'power' | 'snip' | 'lock'
   shortcut: (name) => ipcRenderer.send('island:shortcut', name),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (partial) => ipcRenderer.send('settings:set', partial),

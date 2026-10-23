@@ -120,8 +120,22 @@
         </header>
         <div class="group">
           <div class="row">
-            <div><div class="label">Now Playing screen</div><div class="hint">Full-screen clock, album art and lyrics. Opens after 2 minutes idle while music plays, from the island, or with Ctrl + Alt + M.</div></div>
+            <div><div class="label">Now Playing screen</div><div class="hint">Full-screen clock, album art and lyrics. Opens by itself when you're idle while music plays, from the island, or with Ctrl + Alt + M.</div></div>
             <div class="control"><input id="ambient" type="checkbox" class="switch"></div>
+          </div>
+          <div class="row">
+            <div><div class="label">Open after</div><div class="hint">Minutes without touching the PC, while music plays.</div></div>
+            <div class="control">
+              <input id="idle-min" type="range" min="1" max="30" step="1">
+              <output id="idle-min-value"></output>
+            </div>
+          </div>
+          <div class="row">
+            <div><div class="label">Background</div><div class="hint">Album art keeps the picture, softly blurred; Colour glow keeps only its colours.</div></div>
+            <div class="seg" data-key="ambientBg">
+              <button data-value="art">Album art</button>
+              <button data-value="glow">Colour glow</button>
+            </div>
           </div>
           <div class="row">
             <div><div class="label">Lyrics timing</div><div class="hint">Slide right if lyrics appear late, left if early.</div></div>
@@ -183,7 +197,7 @@
 
         <h2 class="subhead">Shortcuts</h2>
         <div class="group">
-          <div class="row"><span>Open Settings</span><span class="keys"><kbd>Right-click</kbd> the island</span></div>
+          <div class="row"><span>Open Settings</span><span class="keys"><kbd>Right-click</kbd> the island, or the gear in the command centre</span></div>
           <div class="row"><span>Now Playing screen</span><span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>M</kbd></span></div>
           <div class="row"><span>Close the island or Now Playing</span><span class="keys"><kbd>Esc</kbd></span></div>
           <div class="row"><span>Pin the island open</span><span class="keys"><kbd>Click</kbd> it</span></div>

@@ -32,6 +32,9 @@ html, body {
 
 .bg:not([src]) { opacity: 0; }
 
+/* "Album art" background (Settings): the cover stays recognisable, softly blurred and dimmed. */
+body.bg-art .bg { filter: blur(14px) saturate(1.15) brightness(0.5); transform: scale(1.08); }
+
 .shade {
   position: fixed;
   inset: 0;
@@ -191,21 +194,45 @@ body.no-media .stage { display: none; }
 
 .progress.hidden { visibility: hidden; }
 .progress .track {
+  position: relative;
   flex: 1;
   height: 5px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
+  transition: height 150ms ease;
 }
 
+/* Seekable: a taller invisible hit area, and the bar grows with a knob on hover. */
+.progress.seekable .track { cursor: pointer; touch-action: none; }
+.progress.seekable .track::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; bottom: -10px; }
+.progress.seekable .track:hover, .track.scrubbing { height: 7px; }
+
 .progress .fill {
+  position: relative;
   height: 100%;
   width: 0;
   border-radius: 3px;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), #fff);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
+
+.progress .fill::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%) scale(0);
+  transition: transform 150ms ease;
+}
+
+.progress.seekable .track:hover .fill::after,
+.track.scrubbing .fill::after { transform: translateY(-50%) scale(1); }
 
 .controls {
   display: flex;
@@ -233,8 +260,9 @@ body.no-media .stage { display: none; }
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 .controls button:active { transform: scale(0.9); }
-.controls svg { width: 22px; height: 22px; fill: currentColor; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35)); }
-#toggle svg { width: 28px; height: 28px; }
+/* A stroke in the fill colour with round joins gives the icons soft, rounded corners. */
+.controls svg { width: 22px; height: 22px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35)); }
+#toggle svg { width: 26px; height: 26px; }
 
 .icon-pause { display: none; }
 body.playing .icon-play { display: none; }

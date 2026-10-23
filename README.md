@@ -88,7 +88,7 @@ You'll get a **Start menu** entry, a **desktop shortcut**, and a proper uninstal
 | **Scroll** over it while it's open | Flips to the next screen ("view"). It loops around, so you can't get lost. |
 | **Click a dot** on its right edge | Jumps straight to that view. |
 | **Scroll over a volume or brightness slider** | Changes that level instead of flipping views. |
-| **Right-click** it | Opens Settings. |
+| **Right-click** it | Opens Settings. (Or use the gear button in the command centre.) |
 | Press **Escape** | Closes it. Handy after typing a note. |
 
 ### When it's small (collapsed)
@@ -142,9 +142,10 @@ Scroll over the open island, or click the dots, to move between these. You can h
 
 A full-screen view that looks like a phone's lock screen: the date and a big frosted-glass clock, a large album cover, a frosted-glass music card with controls, and lyrics (synced when the song has them, otherwise scrollable text), all over a blurred copy of the album art.
 
-- **Opens by itself** after 2 minutes of not touching your PC, but only while music is *playing*. It never pops up over a full-screen video or game, or while your PC is locked.
+- **Opens by itself** after 2 minutes of not touching your PC (change this in Settings → Now Playing, 1–30 minutes), but only while music is *playing*. It never pops up over a full-screen video or game, or while your PC is locked.
 - **Open it yourself** with the screen button at the right of the island's music controls, or press **Ctrl + Alt + M** (press it again to close).
 - **Top-left buttons:** **✕** closes it; the **speech bubble** shows or hides the lyrics (remembered).
+- **Progress bar:** click or drag it to jump to any part of the song, just like on the island.
 - **To close it,** click the ✕, click anywhere outside the music card, or press **Esc**. Moving the mouse doesn't close it, so you can use the buttons.
 - **Don't want it?** Turn it off in Settings → Now Playing. That stops it opening by itself, disables Ctrl + Alt + M, and hides its button.
 - It *looks* like a lock screen but **doesn't lock your PC**. To actually lock it, press **Win + L**.
@@ -159,7 +160,7 @@ A full-screen view that looks like a phone's lock screen: the date and a big fro
 - **Wi-Fi:** shows which network you're on. Click it to turn Wi-Fi on or off.
 - **Bluetooth:** click it to turn Bluetooth on or off.
 - **Auto-hide:** click it to cycle between *Listed apps*, *Any app* and *Off*.
-- **Shortcut buttons:** Night light settings, Power & battery settings, Screenshot, Lock your PC, and Windows Settings. (The island hides itself before a screenshot, so it doesn't photobomb.)
+- **Shortcut buttons:** the island's own Settings (gear), Night light settings, Power & battery settings, Screenshot, Lock your PC, and Windows Settings. (The island hides itself before a screenshot, so it doesn't photobomb.)
 - **Volume** and **brightness** sliders. Brightness only shows up on laptop screens.
 
 ### 📅 Calendar + timer
@@ -187,7 +188,7 @@ Open them from the **tray icon → Settings…**, or just **right-click the isla
 | **Appearance** | **Background opacity:** how see-through the island is (40–100%). **Accent colour:** taken from the album art, or pick one of six colours (or any colour you like). **Left side shows:** battery, weather or date. |
 | **Views** | Turn each view on or off, and move it up or down the list. |
 | **Auto-hide** | When to tuck away (over these apps, any app, or never), and which apps count: each app is a tag you can remove with ×; type a name and press Enter to add one. |
-| **Now Playing** | Turn the **Now Playing screen** on or off. **Lyrics timing** slider (up to 2 seconds either way): lyrics running late? Slide it **right**. Too early? Slide it **left**. |
+| **Now Playing** | Turn the **Now Playing screen** on or off, choose **how many idle minutes** before it opens by itself (default 2), and pick its **background**: *Album art* (the cover itself, softly blurred; default) or *Colour glow* (just the cover's colours). **Lyrics timing** slider (up to 2 seconds either way): lyrics running late? Slide it **right**. Too early? Slide it **left**. |
 | **Weather** | Your **city** (press Enter to save) and **°C or °F**. Shows a live weather card once it finds your city. If it didn't, try adding the country, like "Ikeja, Nigeria". Leave the city empty to turn weather off. |
 | **System** | **Start with Windows** (same switch as in the tray menu), and a list of handy shortcuts. |
 
