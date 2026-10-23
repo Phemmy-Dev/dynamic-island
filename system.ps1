@@ -183,6 +183,9 @@ function Get-CoveredBy {
 Add-Type -AssemblyName System.Runtime.WindowsRuntime
 [Windows.Devices.Radios.Radio, Windows.System.Devices, ContentType = WindowsRuntime] | Out-Null
 [Windows.Networking.Connectivity.NetworkInformation, Windows.Networking.Connectivity, ContentType = WindowsRuntime] | Out-Null
+[Windows.Devices.Bluetooth.BluetoothDevice, Windows.Devices.Bluetooth, ContentType = WindowsRuntime] | Out-Null
+[Windows.Devices.Bluetooth.BluetoothLEDevice, Windows.Devices.Bluetooth, ContentType = WindowsRuntime] | Out-Null
+[Windows.Devices.Enumeration.DeviceInformation, Windows.Devices.Enumeration, ContentType = WindowsRuntime] | Out-Null
 
 # PowerShell 5.1 can't await WinRT async operations directly; go through AsTask.
 $asTaskGeneric = [System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
@@ -247,6 +250,18 @@ function Get-Network {
     return @{ type = 'wifi'; name = $p.WlanConnectionProfileDetails.GetConnectedSsid(); level = $level }
   }
   return @{ type = 'wired'; name = $p.ProfileName; level = $level }
+}
+
+# Names of connected Bluetooth devices (classic, e.g. headphones, and Low Energy,
+# e.g. mice and watches), sorted so the list only "changes" when a device does.
+function Get-BluetoothDevices {
+  $names = @()
+  foreach ($type in [Windows.Devices.Bluetooth.BluetoothDevice], [Windows.Devices.Bluetooth.BluetoothLEDevice]) {
+    $selector = $type::GetDeviceSelectorFromConnectionStatus([Windows.Devices.Bluetooth.BluetoothConnectionStatus]::Connected)
+    $found = Await ([Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($selector)) ([Windows.Devices.Enumeration.DeviceInformationCollection])
+    $names += @($found | ForEach-Object { $_.Name } | Where-Object { $_ })
+  }
+  return @($names | Sort-Object -Unique)
 }
 
 # ---------- Brightness (built-in displays only) ----------
@@ -344,6 +359,10 @@ while ($true) {
     try { $slow.radios = Get-Radios } catch { $slow.radios = @{} }
     try { $slow.network = Get-Network } catch { $slow.network = @{ type = 'none' } }
   }
+  # Bluetooth devices: every 2 seconds (10 loops); the lookup takes ~0.1s.
+  if ($refreshSlow -or $loop % 10 -eq 0) {
+    try { $slow.btDevices = Get-BluetoothDevices } catch { $slow.btDevices = @() }
+  }
   $loop++
 
   $state = @{
@@ -354,6 +373,7 @@ while ($true) {
     brightness = $slow.brightness
     radios     = $slow.radios
     network    = $slow.network
+    btDevices  = @($slow.btDevices | Where-Object { $_ })  # PowerShell turns an empty list into $null; drop it
   }
   try {
     $state.volume = [Math]::Round([IslandAudio]::GetVolume(), 2)

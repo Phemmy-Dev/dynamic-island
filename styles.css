@@ -213,7 +213,8 @@ body {
 
 .pill.peeking .wings { opacity: 0; }
 .pill.peeking .peek { opacity: 1; transform: none; }
-.pill.peeking.charge-peek .peek { opacity: 0; }
+.pill.peeking.charge-peek .peek,
+.pill.peeking.device-peek .peek { opacity: 0; }
 
 .peek-icon .icon { width: 18px; height: 18px; }
 .peek-icon .battery-icon { width: 24px; height: 13px; }
@@ -821,6 +822,7 @@ body {
 
 .lyrics-btn { position: absolute; left: 0; }
 .ambient-btn { position: absolute; right: 0; }
+.pill.no-ambient .ambient-btn { display: none; }
 .lyrics-btn.active { background: #fff; color: #000; }
 .lyrics-btn.active:hover { background: rgba(255, 255, 255, 0.85); }
 
@@ -948,3 +950,71 @@ body {
 }
 
 .flip { animation: flip 400ms ease-in-out; }
+
+/* ---------- Bluetooth device connected ---------- */
+
+.pill.peeking.device-peek {
+  width: 300px;
+  height: 46px;
+  border-radius: 0 0 20px 20px;
+}
+
+.device {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.pill.device-peek .device { opacity: 1; }
+
+.device-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #0a84ff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(10, 132, 255, 0.8));
+}
+
+.pill.device-peek:not(.device-off) .device-icon { animation: bt-pulse 1.4s ease-in-out 2; }
+
+@keyframes bt-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(10, 132, 255, 0.6)); }
+  40% { transform: scale(1.2); filter: drop-shadow(0 0 12px rgba(10, 132, 255, 1)); }
+}
+
+/* Name and status sit low, under the notch, like the charging peek. */
+.device-label {
+  align-self: end;
+  padding-bottom: 7px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#device-status { color: #0a84ff; margin-left: 6px; }
+
+.device-dot {
+  justify-self: end;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0a84ff;
+  box-shadow: 0 0 8px rgba(10, 132, 255, 0.9);
+}
+
+/* Disconnected: same layout, greyed. */
+.pill.device-off .device-icon { stroke: rgba(255, 255, 255, 0.45); filter: none; }
+.pill.device-off #device-status { color: rgba(255, 255, 255, 0.6); }
+.pill.device-off .device-dot { background: rgba(255, 255, 255, 0.3); box-shadow: none; }

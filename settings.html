@@ -2,110 +2,141 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'">
   <title>Dynamic Island Settings</title>
   <link rel="stylesheet" href="settings.css">
 </head>
 <body>
-  <main>
-    <h1>Dynamic Island</h1>
-    <p class="hint">Changes apply straight away and are saved automatically.</p>
+  <!-- Draggable strip; Windows draws minimize/maximize/close on top of it. -->
+  <div class="titlebar"></div>
 
-    <section>
-      <h2>Appearance</h2>
-      <div class="row">
-        <label for="opacity">Background opacity</label>
-        <div class="control">
-          <input id="opacity" type="range" min="40" max="100" step="5">
-          <output id="opacity-value"></output>
-        </div>
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand">
+        <img src="assets/icon.png" alt="">
+        <span>Dynamic Island</span>
       </div>
-      <div class="row">
-        <span class="label">Accent colour</span>
-        <div class="control segmented" role="radiogroup">
-          <label><input type="radio" name="accent" value="album"> From album art</label>
-          <label><input type="radio" name="accent" value="fixed"> Fixed</label>
-          <input id="accent-color" type="color" title="Fixed accent colour">
-        </div>
-      </div>
-      <div class="row">
-        <label for="left-wing">Collapsed left side shows</label>
-        <div class="control">
-          <select id="left-wing">
-            <option value="battery">Battery</option>
-            <option value="weather">Weather</option>
-            <option value="date">Date</option>
-          </select>
-        </div>
-      </div>
-    </section>
+      <button class="nav active" data-section="appearance"><span class="ic ic-purple"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" class="fill"/></svg></span>Appearance</button>
+      <button class="nav" data-section="views"><span class="ic ic-blue"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/></svg></span>Views</button>
+      <button class="nav" data-section="autohide"><span class="ic ic-orange"><svg viewBox="0 0 24 24"><path d="M4 5h16M12 19V9m-4 4 4-4 4 4"/></svg></span>Auto-hide</button>
+      <button class="nav" data-section="nowplaying"><span class="ic ic-pink"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>Now Playing</button>
+      <button class="nav" data-section="weather"><span class="ic ic-cyan"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7 11a3.5 3.5 0 0 0 0 7z"/></svg></span>Weather</button>
+      <button class="nav" data-section="system"><span class="ic ic-grey"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></span>System</button>
+      <p class="saved">Changes save automatically</p>
+    </nav>
 
-    <section>
-      <h2>Views</h2>
-      <p class="hint">Scroll over the island to move between these, top to bottom. Now playing only appears while something is playing.</p>
-      <ul id="views" class="views"></ul>
-    </section>
-
-    <section>
-      <h2>Auto-hide</h2>
-      <div class="row">
-        <label for="tuck-mode">Tuck the island away</label>
-        <div class="control">
-          <select id="tuck-mode">
-            <option value="browsers">Over the apps below</option>
-            <option value="always">Over any app</option>
-            <option value="never">Never</option>
-          </select>
+    <main>
+      <section class="pane active" data-section="appearance">
+        <h1>Appearance</h1>
+        <div class="group">
+          <div class="row">
+            <div><div class="label">Background opacity</div><div class="hint">How see-through the island is.</div></div>
+            <div class="control">
+              <input id="opacity" type="range" min="40" max="100" step="5">
+              <output id="opacity-value"></output>
+            </div>
+          </div>
+          <div class="row">
+            <div><div class="label">Accent colour</div><div class="hint">Used for the equalizer bars and highlights.</div></div>
+            <div class="control segmented" role="radiogroup">
+              <label><input type="radio" name="accent" value="album"> Album art</label>
+              <label><input type="radio" name="accent" value="fixed"> Fixed</label>
+              <input id="accent-color" type="color" title="Fixed accent colour">
+            </div>
+          </div>
+          <div class="row">
+            <div><div class="label">Collapsed left side</div><div class="hint">What the small island shows on the left.</div></div>
+            <div class="control">
+              <select id="left-wing">
+                <option value="battery">Battery</option>
+                <option value="weather">Weather</option>
+                <option value="date">Date</option>
+              </select>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="row column">
-        <label for="tuck-apps">Apps (process names from Task Manager › Details, one per line)</label>
-        <textarea id="tuck-apps" rows="4" spellcheck="false"></textarea>
-      </div>
-    </section>
+      </section>
 
-    <section>
-      <h2>Lyrics</h2>
-      <div class="row">
-        <label for="lyrics-offset">Timing</label>
-        <div class="control">
-          <input id="lyrics-offset" type="range" min="-2000" max="2000" step="50">
-          <output id="lyrics-offset-value"></output>
+      <section class="pane" data-section="views">
+        <h1>Views</h1>
+        <p class="intro">Scroll over the island to move between these, top to bottom. Now playing only appears while something is playing.</p>
+        <div class="group">
+          <ul id="views" class="views"></ul>
         </div>
-      </div>
-      <p class="hint">Move right if lyrics appear late, left if they appear early.</p>
-    </section>
+      </section>
 
-    <section>
-      <h2>Weather</h2>
-      <div class="row">
-        <label for="weather-city">City</label>
-        <div class="control">
-          <input id="weather-city" type="text" placeholder="e.g. Lagos" autocomplete="off">
+      <section class="pane" data-section="autohide">
+        <h1>Auto-hide</h1>
+        <p class="intro">The island tucks into a thin line over these apps so it doesn't cover their tabs. Rest the mouse on the line to open it.</p>
+        <div class="group">
+          <div class="row">
+            <div class="label">Tuck the island away</div>
+            <div class="control">
+              <select id="tuck-mode">
+                <option value="browsers">Over the apps below</option>
+                <option value="always">Over any app</option>
+                <option value="never">Never</option>
+              </select>
+            </div>
+          </div>
+          <div class="row column">
+            <label class="label" for="tuck-apps">Apps</label>
+            <textarea id="tuck-apps" rows="6" spellcheck="false"></textarea>
+            <div class="hint">One per line, as shown in Task Manager › Details, without ".exe".</div>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <label for="weather-units">Units</label>
-        <div class="control">
-          <select id="weather-units">
-            <option value="celsius">°C</option>
-            <option value="fahrenheit">°F</option>
-          </select>
-        </div>
-      </div>
-      <p id="weather-status" class="hint"></p>
-      <p class="hint">Weather comes from Open-Meteo (free, no account). Only the city you type here is sent to it. Leave the city empty to turn weather off.</p>
-    </section>
+      </section>
 
-    <section>
-      <h2>System</h2>
-      <div class="row">
-        <label for="startup">Start with Windows</label>
-        <div class="control"><input id="startup" type="checkbox" class="switch"></div>
-      </div>
-      <p class="hint">Quit from the tray icon (bottom right of the taskbar).</p>
-    </section>
-  </main>
+      <section class="pane" data-section="nowplaying">
+        <h1>Now Playing</h1>
+        <div class="group">
+          <div class="row">
+            <div><div class="label">Now Playing screen</div><div class="hint">The full-screen clock, album art and lyrics. Opens after 2 minutes idle while music plays, from the island, or with Ctrl + Alt + M.</div></div>
+            <div class="control"><input id="ambient" type="checkbox" class="switch"></div>
+          </div>
+          <div class="row">
+            <div><div class="label">Lyrics timing</div><div class="hint">Slide right if lyrics appear late, left if early.</div></div>
+            <div class="control">
+              <input id="lyrics-offset" type="range" min="-2000" max="2000" step="50">
+              <output id="lyrics-offset-value"></output>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" data-section="weather">
+        <h1>Weather</h1>
+        <div class="group">
+          <div class="row">
+            <label class="label" for="weather-city">City</label>
+            <div class="control"><input id="weather-city" type="text" placeholder="e.g. Lagos" autocomplete="off"></div>
+          </div>
+          <div class="row">
+            <label class="label" for="weather-units">Units</label>
+            <div class="control">
+              <select id="weather-units">
+                <option value="celsius">°C</option>
+                <option value="fahrenheit">°F</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <p id="weather-status" class="intro"></p>
+        <p class="intro">From Open-Meteo (free, no account). Only the city you type is sent. Leave it empty to turn weather off.</p>
+      </section>
+
+      <section class="pane" data-section="system">
+        <h1>System</h1>
+        <div class="group">
+          <div class="row">
+            <div><div class="label">Start with Windows</div><div class="hint">Open the island automatically when you sign in.</div></div>
+            <div class="control"><input id="startup" type="checkbox" class="switch"></div>
+          </div>
+        </div>
+        <p class="intro">Quit from the tray icon (bottom right of the taskbar).</p>
+      </section>
+    </main>
+  </div>
   <script src="settings.js"></script>
 </body>
 </html>

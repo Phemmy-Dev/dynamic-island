@@ -105,6 +105,7 @@ The island briefly pops out to show you:
 - **Volume changes**, from your keyboard keys or anywhere else.
 - **Charger plugged in**: the island widens with a glowing green bolt, "Charging" and your battery level. **Unplugged**: the same, in white, saying "On battery".
 - **Timer finished**: a bell, the word "Done", and three soft beeps.
+- **Bluetooth device connected or disconnected**: a blue Bluetooth icon with the device's name, e.g. "Galaxy Buds2 Pro Connected".
 
 ### Auto-hide (a.k.a. tucking)
 
@@ -139,11 +140,13 @@ Scroll over the open island, or click the dots, to move between these. You can h
 
 ### 🌙 The Now Playing screen
 
-A full-screen view that looks like a phone's lock screen: the date and a big clock, a large album cover, a frosted-glass music card with controls, and synced lyrics when the song has them, all over a blurred copy of the album art.
+A full-screen view that looks like a phone's lock screen: the date and a big frosted-glass clock, a large album cover, a frosted-glass music card with controls, and lyrics (synced when the song has them, otherwise scrollable text), all over a blurred copy of the album art.
 
 - **Opens by itself** after 2 minutes of not touching your PC, but only while music is *playing*. It never pops up over a full-screen video or game, or while your PC is locked.
 - **Open it yourself** with the screen button at the right of the island's music controls, or press **Ctrl + Alt + M** (press it again to close).
-- **To close it,** click anywhere outside the music card or press **Esc**. Moving the mouse doesn't close it, so you can use the buttons.
+- **Top-left buttons:** **✕** closes it; the **speech bubble** shows or hides the lyrics (remembered).
+- **To close it,** click the ✕, click anywhere outside the music card, or press **Esc**. Moving the mouse doesn't close it, so you can use the buttons.
+- **Don't want it?** Turn it off in Settings → Now Playing. That stops it opening by itself, disables Ctrl + Alt + M, and hides its button.
 - It *looks* like a lock screen but **doesn't lock your PC**. To actually lock it, press **Win + L**.
 
 ### 🕐 Overview
@@ -177,14 +180,14 @@ A full-screen view that looks like a phone's lock screen: the date and a big clo
 
 ## Settings
 
-Open them from the **tray icon → Settings…**, or just **right-click the island**. Everything saves automatically the moment you change it.
+Open them from the **tray icon → Settings…**, or just **right-click the island**. Pick a section in the sidebar on the left. Everything saves automatically the moment you change it.
 
 | Section | What you can change |
 |---|---|
 | **Appearance** | **Background opacity:** how see-through the island is (40–100%). **Accent colour:** taken from the album art, or one colour you choose. **Collapsed left side shows:** battery, weather or date. |
 | **Views** | Turn each view on or off, and move it up or down the list. |
 | **Auto-hide** | When to tuck away (over listed apps, any app, or never), and which apps count. One name per line. |
-| **Lyrics** | **Timing** slider (up to 2 seconds either way). Lyrics running late? Slide it **right**. Too early? Slide it **left**. |
+| **Now Playing** | Turn the **Now Playing screen** on or off. **Lyrics timing** slider (up to 2 seconds either way): lyrics running late? Slide it **right**. Too early? Slide it **left**. |
 | **Weather** | Your **city** (press Enter to save) and **°C or °F**. It tells you if it found your city. If it didn't, try adding the country, like "Ikeja, Nigeria". Leave the city empty to turn weather off. |
 | **System** | **Start with Windows** (same switch as in the tray menu). |
 
@@ -335,7 +338,7 @@ Info about Windows (music, battery, Wi-Fi and so on) comes from two small **Powe
 | `widgets/flip.js` | The album-art flip when the song changes, shared by the island and the Now Playing screen. |
 | `ambient.html`, `ambient.css`, `ambient.js` | The full-screen Now Playing screen. |
 | `settings.html`, `settings.css`, `settings.js`, `settings-preload.js` | The Settings window. |
-| `assets/` | The icons. |
+| `assets/` | The icons, and the Nunito font used by the Now Playing clock (`assets/fonts/`, with its Open Font License). |
 
 **How often it checks things:** volume, battery and the app under the island five times a second; brightness, Wi-Fi and network once a second; music every 0.4 seconds; weather every 15 minutes.
 
@@ -346,6 +349,7 @@ Info about Windows (music, battery, Wi-Fi and so on) comes from two small **Powe
 - Built with [Electron](https://www.electronjs.org) and packaged with [electron-builder](https://www.electron.build).
 - Lyrics from [LRCLIB](https://lrclib.net), a free and open lyrics database. 🎤
 - Weather from [Open-Meteo](https://open-meteo.com). ⛅
+- Clock font: [Nunito](https://github.com/googlefonts/nunito), under the SIL Open Font License.
 - Inspired by Apple's Dynamic Island and the Bloom app for Windows.
 
 Made with ☕ and a lot of hovering.

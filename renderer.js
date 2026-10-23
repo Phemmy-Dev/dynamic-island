@@ -283,7 +283,19 @@ function peek(iconHtml, fraction, valueText, durationMs = 1800) {
 
 function stopPeek() {
   clearTimeout(peekTimer);
-  pill.classList.remove('peeking', 'charge-peek', 'unplugged');
+  pill.classList.remove('peeking', 'charge-peek', 'unplugged', 'device-peek', 'device-off');
+}
+
+// A Bluetooth device connected or disconnected.
+function devicePeek(name, connected) {
+  if (isExpanded()) return;
+  $('device-name').textContent = name;
+  $('device-status').textContent = connected ? 'Connected' : 'Disconnected';
+  pill.classList.remove('charge-peek', 'unplugged');
+  pill.classList.toggle('device-off', !connected);
+  pill.classList.add('peeking', 'device-peek');
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(stopPeek, 2800);
 }
 
 // Charger plugged in or out: a wider, slightly taller peek. Plugging in gets
@@ -293,6 +305,7 @@ function chargePeek(battery) {
   $('charge-text').textContent = battery.pluggedIn ? 'Charging' : 'On battery';
   $('charge-pct').textContent = `${battery.percent}%`;
   $('charge-battery').innerHTML = batteryIcon(battery.percent, false);
+  pill.classList.remove('device-peek', 'device-off');
   pill.classList.toggle('unplugged', !battery.pluggedIn);
   pill.classList.add('peeking', 'charge-peek');
   clearTimeout(peekTimer);
@@ -390,6 +403,15 @@ function onSystemMessage(msg) {
   }
 
   // Charger plugged in or removed.
+  // Bluetooth device connected or disconnected (first change only, if several at once).
+  // [].concat: PowerShell may send a single device as a plain string.
+  const before = [].concat(prev.btDevices || []);
+  const now = [].concat(msg.btDevices || []);
+  const added = now.find((d) => !before.includes(d));
+  const removed = before.find((d) => !now.includes(d));
+  if (added) devicePeek(added, true);
+  else if (removed) devicePeek(removed, false);
+
   if (msg.battery.present && prev.battery.pluggedIn !== msg.battery.pluggedIn) {
     chargePeek(msg.battery);
   }
@@ -660,6 +682,7 @@ function applySettings(next) {
   renderTuckTile();
   if (systemState) renderTuck();
   renderLeftWing();
+  pill.classList.toggle('no-ambient', !settings.ambient);
   // Keep the current view if it's still enabled, otherwise fall back.
   setView(currentView);
 }

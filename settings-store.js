@@ -19,6 +19,7 @@ const DEFAULTS = {
   lyricsOffsetMs: 0,                // -2000 .. 2000; positive shows lines earlier
   weatherCity: '',
   weatherUnits: 'celsius',          // 'celsius' | 'fahrenheit'
+  ambient: true,                    // Now Playing screen (idle, button, Ctrl+Alt+M)
 };
 
 // Each validator returns the cleaned value, or undefined to reject it.
@@ -53,6 +54,7 @@ const VALIDATORS = {
   lyricsOffsetMs: (v) => (Number.isFinite(v) ? Math.round(Math.min(2000, Math.max(-2000, v)) / 50) * 50 : undefined),
   weatherCity: (v) => (typeof v === 'string' ? v.trim().slice(0, 80) : undefined),
   weatherUnits: (v) => (['celsius', 'fahrenheit'].includes(v) ? v : undefined),
+  ambient: (v) => (typeof v === 'boolean' ? v : undefined),
 };
 
 const file = () => path.join(app.getPath('userData'), 'settings.json');

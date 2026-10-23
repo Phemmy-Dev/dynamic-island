@@ -61,8 +61,24 @@ function render() {
   if (key !== lyricsKey) loadLyrics(key);
 }
 
+// A bright, blurred copy of the cover for the glass clock digits.
+function setGlassArt(src) {
+  if (!src) return document.documentElement.style.removeProperty('--glass-art');
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 160;
+    const ctx = c.getContext('2d');
+    ctx.filter = 'blur(20px) brightness(1.6) saturate(1.4)';
+    ctx.drawImage(img, -20, -20, 200, 200);  // overdraw so the blur has no dark edges
+    document.documentElement.style.setProperty('--glass-art', `url(${c.toDataURL()})`);
+  };
+  img.src = src;
+}
+
 window.island.onHelperMessage((msg) => {
   if (msg.type === 'artwork') {
+    setGlassArt(msg.data);
     if (msg.data) $('bg').src = msg.data;
     else $('bg').removeAttribute('src');
     flipImage($('art'), msg.data);
@@ -87,14 +103,30 @@ async function loadLyrics(key) {
   const result = await window.media.getLyrics({
     title: np.title, artist: np.artist || '', album: np.album || '', durationMs: np.durationMs || 0,
   });
-  if (key !== lyricsKey || !result.synced) return;  // song changed, or nothing synced to show
-  lyricLines = parseLrc(result.synced).map((l) => {
+  if (key !== lyricsKey) return;  // song changed while we waited
+  if (result.error) {
+    // Lyrics service unreachable: ask again in 15 seconds.
+    setTimeout(() => { if (lyricsKey === key) lyricsKey = null; render(); }, 15000);
+    return;
+  }
+  const addLine = (text) => {
     const el = document.createElement('div');
     el.className = 'line';
-    el.textContent = l.text;  // from the internet: never innerHTML
+    el.textContent = text;  // from the internet: never innerHTML
     $('lines').appendChild(el);
-    return { t: l.t, el };
-  });
+    return el;
+  };
+  document.body.classList.toggle('plain-lyrics', !result.synced);
+  if (result.synced) {
+    lyricLines = parseLrc(result.synced).map((l) => ({ t: l.t, el: addLine(l.text) }));
+  } else if (result.plain) {
+    // No timings: show the words as scrollable text.
+    $('lines').style.transform = '';
+    $('lyrics').scrollTop = 0;
+    result.plain.split('\n').forEach((l) => addLine(l.trim() || ' '));
+  } else {
+    return;
+  }
   document.body.classList.remove('no-lyrics');
 }
 
@@ -119,7 +151,19 @@ setInterval(() => {
 // Moving the mouse doesn't close it (you'd never reach the buttons);
 // a click outside the music card or Esc does.
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.card')) window.island.closeAmbient();
+  if (!e.target.closest('.card, .corner')) window.island.closeAmbient();
+});
+$('close').addEventListener('click', () => window.island.closeAmbient());
+
+// Lyrics on/off, remembered.
+let lyricsOff = false;
+try { lyricsOff = localStorage.getItem('ambientLyricsOff') === '1'; } catch {}
+document.body.classList.toggle('lyrics-off', lyricsOff);
+$('lyrics-toggle').addEventListener('click', () => {
+  lyricsOff = !lyricsOff;
+  document.body.classList.toggle('lyrics-off', lyricsOff);
+  try { localStorage.setItem('ambientLyricsOff', lyricsOff ? '1' : '0'); } catch {}
+  currentLine = -1;  // re-centre the current line when lyrics come back
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') window.island.closeAmbient();

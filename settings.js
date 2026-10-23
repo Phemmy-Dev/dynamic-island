@@ -19,16 +19,19 @@ function renderViews() {
   current.views.forEach((view, i) => {
     const li = document.createElement('li');
 
-    const label = document.createElement('label');
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = VIEW_NAMES[view.id] || view.id;
     const box = document.createElement('input');
     box.type = 'checkbox';
+    box.className = 'switch';
+    box.title = 'Show this view';
     box.checked = view.on;
     box.addEventListener('change', () => {
       const views = current.views.map((v) => ({ ...v }));
       views[i].on = box.checked;
       api.set({ views });
     });
-    label.append(box, VIEW_NAMES[view.id] || view.id);
 
     const move = (delta, text, title) => {
       const b = document.createElement('button');
@@ -43,7 +46,7 @@ function renderViews() {
       return b;
     };
 
-    li.append(label, move(-1, '↑', 'Move up'), move(1, '↓', 'Move down'));
+    li.append(name, move(-1, '↑', 'Move up'), move(1, '↓', 'Move down'), box);
     list.appendChild(li);
   });
 }
@@ -74,6 +77,7 @@ function render(s) {
   $('lyrics-offset-value').textContent = formatOffset(s.lyricsOffsetMs);
   setIfIdle($('weather-city'), s.weatherCity);
   setIfIdle($('weather-units'), s.weatherUnits);
+  $('ambient').checked = s.ambient;
 }
 
 function renderWeather(w) {
@@ -101,6 +105,14 @@ $('weather-city').addEventListener('change', (e) => api.set({ weatherCity: e.tar
 $('weather-city').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 $('weather-units').addEventListener('change', (e) => api.set({ weatherUnits: e.target.value }));
 $('startup').addEventListener('change', (e) => api.setStartWithWindows(e.target.checked));
+$('ambient').addEventListener('change', (e) => api.set({ ambient: e.target.checked }));
+
+// Sidebar: show one section at a time.
+document.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
+  document.querySelectorAll('.nav, .pane').forEach((el) => {
+    el.classList.toggle('active', el.dataset.section === btn.dataset.section);
+  });
+}));
 
 api.onChanged(render);
 api.onWeather(renderWeather);

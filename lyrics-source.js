@@ -39,27 +39,39 @@ function pickBest(results, durationSec) {
 async function lookup({ title, artist, album, durationMs }) {
   const durationSec = durationMs > 0 ? Math.round(durationMs / 1000) : 0;
   const q = (params) => new URLSearchParams(params).toString();
-
-  // 1. Exact match (needs all four fields).
-  if (artist && album && durationSec) {
-    const exact = await getJson(`${API}/get?${q({
-      track_name: title, artist_name: artist, album_name: album, duration: durationSec,
-    })}`);
-    if (exact && (exact.syncedLyrics || exact.plainLyrics)) return exact;
-  }
-
-  // 2. Search by title + artist.
   const cleaned = cleanTitle(title) || title;
-  if (artist) {
-    const best = pickBest(await getJson(`${API}/search?${q({ track_name: cleaned, artist_name: artist })}`), durationSec);
-    if (best) return best;
-  }
 
-  // 3. Free-text search, for video titles like "Artist - Song (Official Video)".
-  return pickBest(await getJson(`${API}/search?${q({ q: cleaned })}`), durationSec);
+  // Tried in order. If one fails (LRCLIB sometimes answers 503), try the next;
+  // only report an error if every attempt failed.
+  const steps = [
+    // 1. Exact match (needs all four fields).
+    artist && album && durationSec && (async () => {
+      const exact = await getJson(`${API}/get?${q({ track_name: title, artist_name: artist, album_name: album, duration: durationSec })}`);
+      return exact && (exact.syncedLyrics || exact.plainLyrics) ? exact : null;
+    }),
+    // 2. Search by title + artist.
+    artist && (async () => pickBest(await getJson(`${API}/search?${q({ track_name: cleaned, artist_name: artist })}`), durationSec)),
+    // 3. Free-text search, for video titles like "Artist - Song (Official Video)".
+    async () => pickBest(await getJson(`${API}/search?${q({ q: cleaned })}`), durationSec),
+  ].filter(Boolean);
+
+  let lastError = null;
+  let anyAnswered = false;
+  for (const step of steps) {
+    try {
+      const found = await step();
+      anyAnswered = true;
+      if (found) return found;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  if (!anyAnswered) throw lastError;
+  return null;
 }
 
-// Returns { synced, plain, instrumental } or { none: true }. Throws on network errors.
+// Returns { synced, plain, instrumental } or { none: true }. Throws if LRCLIB couldn't be reached at all
+// (not cached, so the next try asks again).
 async function getLyrics(track) {
   const key = [track.title, track.artist, track.album].join('|');
   if (cache.has(key)) return cache.get(key);

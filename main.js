@@ -215,6 +215,7 @@ ipcMain.on('settings:open', () => openSettings());
 
 settingsStore.onChange((current, previous) => {
   for (const w of [win, settingsWin]) if (w) w.webContents.send('settings:changed', current);
+  if (!current.ambient) closeAmbient();
   if (current.weatherCity !== previous.weatherCity || current.weatherUnits !== previous.weatherUnits) {
     refreshWeather();
   }
@@ -228,14 +229,19 @@ function openSettings() {
   }
   // Open below the island rather than centred, so its title bar isn't covered.
   const area = screen.getPrimaryDisplay().workArea;
-  const height = Math.min(720, area.height - 90);
+  const width = 760;
+  const height = Math.min(560, area.height - 90);
   settingsWin = new BrowserWindow({
-    width: 500,
+    width,
     height,
-    x: Math.round(area.x + (area.width - 500) / 2),
+    x: Math.round(area.x + (area.width - width) / 2),
     y: area.y + 70,
-    minWidth: 440,
-    minHeight: 400,
+    minWidth: 620,
+    minHeight: 420,
+    // No separate title bar: the glass runs to the top, with Windows' own
+    // minimize/maximize/close buttons drawn over it.
+    titleBarStyle: 'hidden',
+    titleBarOverlay: { color: '#00000000', symbolColor: '#ffffff', height: 34 },
     title: 'Dynamic Island Settings',
     icon: path.join(__dirname, 'assets', 'icon.png'),
     // Windows 11 acrylic glass behind the page (settings.css keeps the page see-through).
@@ -289,6 +295,7 @@ const AMBIENT_IDLE_SEC = 120;
 let screenLocked = false;
 
 function openAmbient() {
+  if (!settingsStore.get().ambient) return;  // turned off in Settings
   if (ambientWin) {
     ambientWin.focus();
     return;
