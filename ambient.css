@@ -131,16 +131,49 @@ body.no-media .stage { display: none; }
 
 .art:not([src]) { visibility: hidden; }
 
-/* Frosted-glass music card */
+/* Liquid-glass music card: thick frosted glass, a rim that catches the light
+   (bright top-left, faint cyan/pink refraction on the far edges), a soft
+   highlight across the top, and depth underneath. */
 .card {
+  position: relative;
   width: min(340px, 34vh);
-  padding: 14px 18px 10px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(30px) saturate(1.4);
+  padding: 15px 18px 10px;
+  border-radius: 26px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.09));
+  backdrop-filter: blur(40px) saturate(1.9) brightness(1.08);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.12),
+    0 24px 60px rgba(0, 0, 0, 0.4);
   text-align: center;
 }
+
+/* The rim: a gradient border drawn with a mask so it follows the rounded corners. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.3px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0.04) 55%,
+    rgba(130, 220, 255, 0.55) 82%, rgba(255, 130, 210, 0.6));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* Specular highlight */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 70% at 15% 0%, rgba(255, 255, 255, 0.22), transparent 60%);
+  pointer-events: none;
+}
+
+.card > * { position: relative; z-index: 1; }
 
 .title, .artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .title { font-size: 15px; font-weight: 600; }
@@ -157,8 +190,22 @@ body.no-media .stage { display: none; }
 }
 
 .progress.hidden { visibility: hidden; }
-.progress .track { flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
-.progress .fill { height: 100%; width: 0; background: #fff; }
+.progress .track {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.progress .fill {
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), #fff);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
 
 .controls {
   display: flex;
@@ -180,9 +227,13 @@ body.no-media .stage { display: none; }
   transition: background 150ms ease, transform 120ms ease;
 }
 
-.controls button:hover { background: rgba(255, 255, 255, 0.14); }
+/* Buttons become little glass bubbles on hover. */
+.controls button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
 .controls button:active { transform: scale(0.9); }
-.controls svg { width: 22px; height: 22px; fill: currentColor; }
+.controls svg { width: 22px; height: 22px; fill: currentColor; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35)); }
 #toggle svg { width: 28px; height: 28px; }
 
 .icon-pause { display: none; }
