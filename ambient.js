@@ -147,12 +147,15 @@ async function loadLyrics(key) {
   lyricLines = null;
   currentLine = -1;
   $('lines').replaceChildren();
-  document.body.classList.add('no-lyrics');
+  // Keep the lyrics column (empty) while looking up the new song, so the
+  // album art doesn't jump to the centre and back. It's hidden below only if
+  // the new song turns out to have none.
   const result = await window.media.getLyrics({
     title: np.title, artist: np.artist || '', album: np.album || '', durationMs: np.durationMs || 0,
   });
   if (key !== lyricsKey) return;  // song changed while we waited
   if (result.error) {
+    document.body.classList.add('no-lyrics');
     // Lyrics service unreachable: ask again in 15 seconds.
     setTimeout(() => { if (lyricsKey === key) lyricsKey = null; render(); }, 15000);
     return;
@@ -173,6 +176,7 @@ async function loadLyrics(key) {
     $('lyrics').scrollTop = 0;
     result.plain.split('\n').forEach((l) => addLine(l.trim() || ' '));
   } else {
+    document.body.classList.add('no-lyrics');
     return;
   }
   document.body.classList.remove('no-lyrics');
