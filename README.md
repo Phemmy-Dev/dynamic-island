@@ -54,7 +54,7 @@ Works on **Windows 10 and 11**.
 
 ## Installing it
 
-1. Download **`Dynamic Island Setup <version>.exe`**.
+1. Download **`DynamicIslandSetup.exe`** from the [latest release](https://github.com/Phemmy-Dev/dynamic-island/releases/latest).
 2. Double-click it.
 3. Windows will probably say **"Windows protected your PC"**. Don't panic. It says that about every app that hasn't paid for a fancy security certificate. Click **More info → Run anyway**.
 4. When it asks who to install it for, pick **Only for me**. It's simpler and doesn't need admin rights.
@@ -310,7 +310,7 @@ then open `http://127.0.0.1:9223` in Chrome.
 npm run dist
 ```
 
-This makes `dist/Dynamic Island Setup <version>.exe` (using electron-builder). Before building a new release, bump `"version"` in `package.json` so the files don't get mixed up.
+This makes `dist/DynamicIslandSetup.exe` (using electron-builder). The name never changes, so `https://github.com/Phemmy-Dev/dynamic-island/releases/latest/download/DynamicIslandSetup.exe` always downloads the newest release. Before building a new release, bump `"version"` in `package.json` so the files don't get mixed up.
 
 Good to know:
 - **PowerShell scripts are unpacked.** They sit next to `app.asar` instead of inside it (see `asarUnpack` in `package.json`), because PowerShell can't read files inside that archive. `helper.js` points to the right place.
