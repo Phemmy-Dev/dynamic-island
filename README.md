@@ -40,7 +40,7 @@ Works on **Windows 10 and 11**.
 
 - 🎵 **Music controls** for anything playing on your PC: Spotify, YouTube in your browser, Media Player, you name it. Play, pause, skip, and drag the progress bar to jump to the good part.
 - 🎤 **Synced lyrics** that scroll along with the song, so you can finally learn the real words. Click a line to jump to it.
-- 🎨 **Colours that match your music:** the island picks up a tint from the album art.
+- 🎨 **Colours that match your music:** the island picks up a tint from the album art, and the cover flips over like a card when the song changes.
 - 🔋 **Battery, volume and time** at a glance, always.
 - ⚙️ **A command centre** with Wi-Fi, Bluetooth, volume and brightness, plus shortcuts for screenshots, locking your PC and more.
 - 📅 **A calendar and a timer:** 5, 15, 25 or 50 minutes, with a little chime when time's up.
@@ -48,6 +48,7 @@ Works on **Windows 10 and 11**.
 - 👀 **Peeks:** turn the volume up, plug in your charger, or finish a timer, and the island pops out for a second to let you know.
 - 🙈 **Auto-hide:** it tucks itself into a thin line over your browser and code editor, so it never sits on top of your tabs.
 - ⛅ **Weather** for your city (optional).
+- 🌙 **A Now Playing screen:** a full-screen, lock-screen-style view with a big clock, the album cover, synced lyrics and a blurred album-art background.
 
 ---
 
@@ -102,7 +103,7 @@ You'll get a **Start menu** entry, a **desktop shortcut**, and a proper uninstal
 
 The island briefly pops out to show you:
 - **Volume changes**, from your keyboard keys or anywhere else.
-- **Charger plugged in or out**, with your battery level.
+- **Charger plugged in**: the island widens with a glowing green bolt, "Charging" and your battery level. **Unplugged**: the same, in white, saying "On battery".
 - **Timer finished**: a bell, the word "Done", and three soft beeps.
 
 ### Auto-hide (a.k.a. tucking)
@@ -135,6 +136,15 @@ Scroll over the open island, or click the dots, to move between these. You can h
   - Can't find the song? It'll say so. Spotify songs match best; YouTube titles are a bit of a lucky dip.
   - It remembers whether you left lyrics on or off.
 - Got Spotify *and* a YouTube tab going? The island follows whichever one is **actually playing**.
+
+### 🌙 The Now Playing screen
+
+A full-screen view that looks like a phone's lock screen: the date and a big clock, a large album cover, a frosted-glass music card with controls, and synced lyrics when the song has them, all over a blurred copy of the album art.
+
+- **Opens by itself** after 2 minutes of not touching your PC, but only while music is *playing*. It never pops up over a full-screen video or game, or while your PC is locked.
+- **Open it yourself** with the screen button at the right of the island's music controls, or press **Ctrl + Alt + M** (press it again to close).
+- **To close it,** click anywhere outside the music card or press **Esc**. Moving the mouse doesn't close it, so you can use the buttons.
+- It *looks* like a lock screen but **doesn't lock your PC**. To actually lock it, press **Win + L**.
 
 ### 🕐 Overview
 - A big clock and today's date.
@@ -321,6 +331,9 @@ Info about Windows (music, battery, Wi-Fi and so on) comes from two small **Powe
 | `preload.js` | The safe bridge between the island's page and the rest of the app. The shortcut buttons can only open a fixed list of things defined in `main.js`. |
 | `index.html`, `styles.css`, `renderer.js` | The island itself: clock, growing and shrinking, views and scrolling, peeks, music, battery/volume and the command centre. |
 | `widgets/time.js`, `widgets/notes.js`, `widgets/lyrics.js` | The calendar and timer, the notepad, and the lyrics panel. |
+| `widgets/lrc.js` | Reads synced lyrics, shared by the lyrics panel and the Now Playing screen. |
+| `widgets/flip.js` | The album-art flip when the song changes, shared by the island and the Now Playing screen. |
+| `ambient.html`, `ambient.css`, `ambient.js` | The full-screen Now Playing screen. |
 | `settings.html`, `settings.css`, `settings.js`, `settings-preload.js` | The Settings window. |
 | `assets/` | The icons. |
 

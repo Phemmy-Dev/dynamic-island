@@ -34,6 +34,13 @@
           <div class="peek-track"><div id="peek-fill" class="peek-fill"></div></div>
           <span id="peek-value" class="peek-value"></span>
         </div>
+
+        <!-- Charger plugged in / unplugged: bolt, "Charging" or "On battery", battery -->
+        <div class="charge">
+          <svg class="charge-bolt" viewBox="0 0 24 24"><path d="M13.5 2 4.5 13.5H11L10 22l9-11.5h-6.5z"/></svg>
+          <span class="charge-label"><span id="charge-text">Charging</span> <span id="charge-pct"></span></span>
+          <span id="charge-battery" class="charge-battery"></span>
+        </div>
       </div>
 
       <!-- ===== Expanded: one view at a time, scroll to switch ===== -->
@@ -140,6 +147,9 @@
             <button id="btn-next" class="ctrl" title="Next">
               <svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l10.5-7z"/></svg>
             </button>
+            <button id="btn-ambient" class="ctrl ctrl-small ambient-btn" title="Now Playing screen (Ctrl+Alt+M)">
+              <svg class="glyph" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></svg>
+            </button>
           </div>
 
           <!-- Slides out to the right of the media card when lyrics are on -->
@@ -190,9 +200,11 @@
       </div>
     </div>
   </div>
+  <script src="widgets/flip.js"></script>
   <script src="renderer.js"></script>
   <script src="widgets/time.js"></script>
   <script src="widgets/notes.js"></script>
+  <script src="widgets/lrc.js"></script>
   <script src="widgets/lyrics.js"></script>
 </body>
 </html>

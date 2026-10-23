@@ -283,7 +283,20 @@ function peek(iconHtml, fraction, valueText, durationMs = 1800) {
 
 function stopPeek() {
   clearTimeout(peekTimer);
-  pill.classList.remove('peeking');
+  pill.classList.remove('peeking', 'charge-peek', 'unplugged');
+}
+
+// Charger plugged in or out: a wider, slightly taller peek. Plugging in gets
+// a glowing green bolt; unplugging the same layout in white.
+function chargePeek(battery) {
+  if (isExpanded()) return;
+  $('charge-text').textContent = battery.pluggedIn ? 'Charging' : 'On battery';
+  $('charge-pct').textContent = `${battery.percent}%`;
+  $('charge-battery').innerHTML = batteryIcon(battery.percent, false);
+  pill.classList.toggle('unplugged', !battery.pluggedIn);
+  pill.classList.add('peeking', 'charge-peek');
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(stopPeek, 2800);
 }
 
 // ---------- System: battery + volume ----------
@@ -378,8 +391,7 @@ function onSystemMessage(msg) {
 
   // Charger plugged in or removed.
   if (msg.battery.present && prev.battery.pluggedIn !== msg.battery.pluggedIn) {
-    peek(batteryIcon(msg.battery.percent, msg.battery.charging), msg.battery.percent / 100,
-      `${msg.battery.percent}%`);
+    chargePeek(msg.battery);
   }
 }
 
@@ -714,10 +726,7 @@ function applyAccent(src) {
 
 function onArtwork(data) {
   lastArtwork = data;
-  artImages.forEach((img) => {
-    if (data) img.src = data;
-    else img.removeAttribute('src');
-  });
+  artImages.forEach((img) => flipImage(img, data));
   applyAccent(data);
 }
 
@@ -727,6 +736,11 @@ trackEl.addEventListener('click', (e) => {
   e.stopPropagation();  // don't pin the island
   window.media.openSource();
   collapse();
+});
+
+$('btn-ambient').addEventListener('click', () => {
+  collapse();
+  window.island.openAmbient();
 });
 
 $('btn-prev').addEventListener('click', () => window.media.send('prev'));

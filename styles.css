@@ -213,6 +213,7 @@ body {
 
 .pill.peeking .wings { opacity: 0; }
 .pill.peeking .peek { opacity: 1; transform: none; }
+.pill.peeking.charge-peek .peek { opacity: 0; }
 
 .peek-icon .icon { width: 18px; height: 18px; }
 .peek-icon .battery-icon { width: 24px; height: 13px; }
@@ -819,6 +820,7 @@ body {
 /* ---------- Lyrics ---------- */
 
 .lyrics-btn { position: absolute; left: 0; }
+.ambient-btn { position: absolute; right: 0; }
 .lyrics-btn.active { background: #fff; color: #000; }
 .lyrics-btn.active:hover { background: rgba(255, 255, 255, 0.85); }
 
@@ -880,3 +882,69 @@ body {
 }
 
 .lyrics-status:empty { display: none; }
+
+/* ---------- Charger plugged in ---------- */
+
+.pill.peeking.charge-peek {
+  width: 300px;
+  height: 46px;
+  border-radius: 0 0 20px 20px;
+}
+
+.charge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.pill.charge-peek .charge { opacity: 1; }
+
+.charge-bolt {
+  width: 18px;
+  height: 18px;
+  fill: #34c759;
+  justify-self: start;
+  filter: drop-shadow(0 0 6px rgba(52, 199, 89, 0.8));
+}
+
+.pill.charge-peek .charge-bolt { animation: bolt 1.4s ease-in-out 2; }
+
+@keyframes bolt {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(52, 199, 89, 0.6)); }
+  40% { transform: scale(1.25); filter: drop-shadow(0 0 12px rgba(52, 199, 89, 1)); }
+}
+
+/* Text sits low, under the notch, like a phone's charging pill. */
+.charge-label {
+  align-self: end;
+  padding-bottom: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+#charge-pct { color: #34c759; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+.charge-battery { justify-self: end; color: #34c759; }
+.charge-battery .battery-icon { width: 24px; height: 13px; }
+.charge-battery .battery-icon rect:last-of-type { fill: #34c759; }
+
+/* Unplugged: same layout, no glow; the battery follows its usual colour (red when low). */
+.pill.unplugged .charge-bolt { fill: rgba(255, 255, 255, 0.45); filter: none; animation: none; }
+.pill.unplugged #charge-pct { color: #fff; }
+.pill.unplugged .charge-battery { color: #fff; }
+.pill.unplugged .charge-battery .battery-icon rect:last-of-type { fill: var(--battery-fill); }
+
+/* Album art flips like a card when the song changes (see widgets/flip.js). */
+@keyframes flip {
+  0% { transform: perspective(600px) rotateY(0deg); }
+  50% { transform: perspective(600px) rotateY(90deg); }
+  100% { transform: perspective(600px) rotateY(0deg); }
+}
+
+.flip { animation: flip 400ms ease-in-out; }

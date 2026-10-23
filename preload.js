@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('island', {
   setSettings: (partial) => ipcRenderer.send('settings:set', partial),
   onSettings: (callback) => ipcRenderer.on('settings:changed', (_event, s) => callback(s)),
   openSettings: () => ipcRenderer.send('settings:open'),
+  openAmbient: () => ipcRenderer.send('ambient:open'),
+  closeAmbient: () => ipcRenderer.send('ambient:close'),
 });
 
 contextBridge.exposeInMainWorld('media', {

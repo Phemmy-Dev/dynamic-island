@@ -23,8 +23,13 @@ function cleanTitle(title) {
 }
 
 // Closest match by duration, preferring entries with synced lyrics.
+// Search results whose length is way off are a different song (e.g. a
+// 47-minute episode titled "Netflix" matching a 3-minute track).
+const MAX_DURATION_GAP_SEC = 15;
+
 function pickBest(results, durationSec) {
-  const usable = (results || []).filter((r) => r.syncedLyrics || r.plainLyrics);
+  const usable = (results || []).filter((r) => (r.syncedLyrics || r.plainLyrics) &&
+    (!durationSec || Math.abs((r.duration || 0) - durationSec) <= MAX_DURATION_GAP_SEC));
   if (!usable.length) return null;
   const score = (r) =>
     (r.syncedLyrics ? 0 : 1000) + (durationSec ? Math.abs((r.duration || 0) - durationSec) : 0);

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:">
+  <title>Now Playing</title>
+  <link rel="stylesheet" href="ambient.css">
+</head>
+<body class="no-media no-lyrics">
+  <img id="bg" class="bg" alt="">
+  <div class="shade"></div>
+
+  <header class="time">
+    <div id="date" class="date"></div>
+    <div id="clock" class="clock"></div>
+  </header>
+
+  <main id="stage" class="stage">
+    <section class="player">
+      <img id="art" class="art" alt="">
+      <div class="card">
+        <div id="title" class="title"></div>
+        <div id="artist" class="artist"></div>
+        <div class="progress">
+          <span id="elapsed">0:00</span>
+          <div class="track"><div id="fill" class="fill"></div></div>
+          <span id="remaining">-0:00</span>
+        </div>
+        <div class="controls">
+          <button id="prev" title="Previous"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg></button>
+          <button id="toggle" title="Play/Pause">
+            <svg class="icon-play" viewBox="0 0 24 24"><path d="M7 4.5v15L19.5 12z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg>
+          </button>
+          <button id="next" title="Next"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l10.5-7z"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="lyrics" class="lyrics">
+      <div id="lines" class="lines"></div>
+    </section>
+  </main>
+
+  <div id="hint" class="hint">Click anywhere or press Esc to close</div>
+
+  <script src="widgets/lrc.js"></script>
+  <script src="widgets/flip.js"></script>
+  <script src="ambient.js"></script>
+</body>
+</html>

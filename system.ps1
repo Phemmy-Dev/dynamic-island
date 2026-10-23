@@ -81,6 +81,25 @@ public static class IslandWindows {
   [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int cmd);
   [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr hwnd, uint cmd);
   [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr hwnd);
+  [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr hwnd);
+
+  // True when the app in front covers the whole screen (full-screen video,
+  // game, slideshow). Maximized windows don't count: with an auto-hiding
+  // taskbar they cover the screen too, but they're ordinary windows.
+  public static bool ForegroundIsFullscreen(uint ownPid, int left, int top, int right, int bottom) {
+    IntPtr hwnd = GetForegroundWindow();
+    if (hwnd == IntPtr.Zero || IsZoomed(hwnd)) return false;
+    uint pid;
+    GetWindowThreadProcessId(hwnd, out pid);
+    if (pid == ownPid) return false;
+    var name = new StringBuilder(256);
+    GetClassName(hwnd, name, 256);
+    if (Array.IndexOf(Ignored, name.ToString()) >= 0) return false;
+    RECT r;
+    GetWindowRect(hwnd, out r);
+    return r.Left <= left && r.Top <= top && r.Right >= right && r.Bottom >= bottom;
+  }
 
   // Brings the first titled, unowned, on-screen window of these processes to
   // the front (restoring it if minimized). False if they have none.
@@ -341,6 +360,10 @@ while ($true) {
     $state.muted = [IslandAudio]::GetMute()
   } catch {}  # no playback device
   try { $state.coveredBy = Get-CoveredBy } catch { $state.coveredBy = $null }
+  try {
+    $sb = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    $state.fullscreen = [IslandWindows]::ForegroundIsFullscreen($ownPid, $sb.Left, $sb.Top, $sb.Right, $sb.Bottom)
+  } catch { $state.fullscreen = $false }
 
   $json = $state | ConvertTo-Json -Compress
   if ($json -ne $lastJson) {

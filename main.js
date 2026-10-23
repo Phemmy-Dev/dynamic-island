@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, shell, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, shell, Tray, Menu, nativeImage, powerMonitor, globalShortcut } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const { startHelper } = require('./helper');
@@ -14,6 +14,7 @@ const WIN_HEIGHT = 220;
 
 let win = null;
 let settingsWin = null;
+let ambientWin = null;
 let tray = null;
 let media = null;
 let system = null;
@@ -112,6 +113,7 @@ const lastMessages = new Map();
 function relay(msg) {
   lastMessages.set(msg.type, msg);
   if (win) win.webContents.send('helper:message', msg);
+  if (ambientWin) ambientWin.webContents.send('helper:message', msg);
   if (msg.type === 'weather' && settingsWin) settingsWin.webContents.send('settings:weather', msg);
 }
 
@@ -236,7 +238,10 @@ function openSettings() {
     minHeight: 400,
     title: 'Dynamic Island Settings',
     icon: path.join(__dirname, 'assets', 'icon.png'),
-    backgroundColor: '#161618',
+    // Windows 11 acrylic glass behind the page (settings.css keeps the page see-through).
+    // Older Windows ignores this and shows the dark page background instead.
+    backgroundColor: '#00000000',
+    backgroundMaterial: 'acrylic',
     autoHideMenuBar: true,
     show: false,
     webPreferences: {
@@ -276,6 +281,68 @@ async function refreshWeather() {
   if (id === weatherRequest) relay(msg);  // ignore answers for an older city
 }
 
+// ---------- Now Playing screen ----------
+
+// Full-screen "lock screen" look: big clock, album art, lyrics. It doesn't
+// lock the PC (Windows keeps apps off the real lock screen).
+const AMBIENT_IDLE_SEC = 120;
+let screenLocked = false;
+
+function openAmbient() {
+  if (ambientWin) {
+    ambientWin.focus();
+    return;
+  }
+  const { bounds } = screen.getPrimaryDisplay();
+  ambientWin = new BrowserWindow({
+    ...bounds,
+    frame: false,
+    fullscreen: true,
+    skipTaskbar: true,
+    backgroundColor: '#000000',
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  ambientWin.setAlwaysOnTop(true, 'screen-saver');
+  ambientWin.loadFile('ambient.html');
+  ambientWin.webContents.on('did-finish-load', () => {
+    for (const msg of lastMessages.values()) ambientWin.webContents.send('helper:message', msg);
+  });
+  ambientWin.webContents.on('console-message', (e) => {
+    if (e.level === 'error') console.error('[ambient]', e.message);
+  });
+  ambientWin.once('ready-to-show', () => {
+    ambientWin.show();
+    ambientWin.focus();
+    if (win) win.hide();  // the island would sit on top of the clock
+  });
+  ambientWin.on('closed', () => {
+    ambientWin = null;
+    if (win) win.showInactive();
+  });
+}
+
+function closeAmbient() {
+  if (ambientWin) ambientWin.close();
+}
+
+ipcMain.on('ambient:open', openAmbient);
+ipcMain.on('ambient:close', closeAmbient);
+
+// Open by itself after a while untouched, but only while music is playing,
+// never over a full-screen video/game, and not while Windows is locked.
+function checkIdleAmbient() {
+  const media = lastMessages.get('state');
+  const sys = lastMessages.get('system');
+  if (ambientWin || screenLocked || !media || media.status !== 'Playing') return;
+  if (sys && sys.fullscreen) return;
+  if (powerMonitor.getSystemIdleTime() >= AMBIENT_IDLE_SEC) openAmbient();
+}
+
 // ---------- Tray ----------
 
 function buildTrayMenu() {
@@ -313,6 +380,11 @@ if (!app.requestSingleInstanceLock()) {
     createTray();
     refreshWeather();
     setInterval(refreshWeather, WEATHER_REFRESH_MS);
+    setInterval(checkIdleAmbient, 5000);
+    powerMonitor.on('lock-screen', () => { screenLocked = true; closeAmbient(); });
+    powerMonitor.on('unlock-screen', () => { screenLocked = false; });
+    // Ctrl+Alt+M toggles the Now Playing screen. Fails quietly if another app owns it.
+    globalShortcut.register('Control+Alt+M', () => (ambientWin ? closeAmbient() : openAmbient()));
     media = startHelper('media.ps1', {
       onMessage: relay,
       onExit: () => relay({ type: 'state', active: false }),
@@ -328,6 +400,7 @@ if (!app.requestSingleInstanceLock()) {
   // A second launch (e.g. from a shortcut) opens Settings instead of a second island.
   app.on('second-instance', () => openSettings());
   app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
     if (media) media.stop();
     if (system) system.stop();
   });

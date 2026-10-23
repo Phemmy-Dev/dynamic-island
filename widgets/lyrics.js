@@ -1,6 +1,7 @@
 // Lyrics panel beside the now-playing card. Synced lyrics follow the song;
 // unsynced ones show as scrollable text. Uses globals from renderer.js
-// ($, pill, nowPlaying, hasMedia, currentPosition, currentView, isExpanded, seekTo).
+// ($, pill, nowPlaying, hasMedia, currentPosition, currentView, isExpanded, seekTo)
+// and widgets/lrc.js (parseLrc, lrcIndexAt).
 (() => {
   const panel = $('lyrics');
   const list = $('lyrics-lines');
@@ -32,18 +33,6 @@
     panel.scrollTop = 0;
     lines = null;
     current = -1;
-  }
-
-  // "[01:02.34] text" -> { t: 62340, text }. A line may carry several stamps.
-  function parseLrc(lrc) {
-    const out = [];
-    for (const raw of lrc.split('\n')) {
-      const stamps = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
-      if (!stamps.length) continue;
-      const text = raw.replace(/\[[^\]]*\]/g, '').trim() || '♪';
-      for (const m of stamps) out.push({ t: (+m[1] * 60 + +m[2]) * 1000, text });
-    }
-    return out.sort((a, b) => a.t - b.t);
   }
 
   // timeMs is set for synced lines: clicking one jumps the song there.
@@ -99,9 +88,7 @@
   function sync(force) {
     if (!lines || !lines.length) return;
     // settings.lyricsOffsetMs: user's timing correction from Settings.
-    const pos = currentPosition() + LEAD_MS + (settings.lyricsOffsetMs || 0);
-    let index = -1;
-    for (let i = 0; i < lines.length && lines[i].t <= pos; i++) index = i;
+    const index = lrcIndexAt(lines, currentPosition() + LEAD_MS + (settings.lyricsOffsetMs || 0));
     if (index === current && !force) return;
     if (current >= 0 && lines[current]) lines[current].el.classList.remove('current');
     current = index;
