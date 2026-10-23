@@ -29,6 +29,8 @@ interface IAudioEndpointVolume {
 [Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown), ComImport]
 interface IMMDevice {
   int Activate(ref Guid id, int clsCtx, IntPtr activationParams, out IAudioEndpointVolume endpointVolume);
+  int OpenPropertyStore(int access, out IntPtr properties);
+  int GetId([MarshalAs(UnmanagedType.LPWStr)] out string id);
 }
 
 [Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown), ComImport]
@@ -42,10 +44,18 @@ class MMDeviceEnumeratorComObject { }
 
 public static class IslandAudio {
   // Looked up every call so switching to headphones etc. is picked up.
-  static IAudioEndpointVolume Endpoint() {
+  static IMMDevice DefaultDevice() {
     var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
     IMMDevice device;
     Marshal.ThrowExceptionForHR(enumerator.GetDefaultAudioEndpoint(0 /* render */, 1 /* multimedia */, out device));
+    return device;
+  }
+
+  // Changes when Windows switches output, e.g. to Bluetooth headphones.
+  public static string GetDeviceId() { string id; Marshal.ThrowExceptionForHR(DefaultDevice().GetId(out id)); return id; }
+
+  static IAudioEndpointVolume Endpoint() {
+    IMMDevice device = DefaultDevice();
     IAudioEndpointVolume volume;
     Guid iid = typeof(IAudioEndpointVolume).GUID;
     Marshal.ThrowExceptionForHR(device.Activate(ref iid, 23 /* CLSCTX_ALL */, IntPtr.Zero, out volume));
@@ -305,6 +315,7 @@ function Get-Battery {
 $stdin = New-Object System.IO.StreamReader([Console]::OpenStandardInput(), [System.Text.Encoding]::UTF8)
 $pending = $stdin.ReadLineAsync()
 $lastJson = $null
+$lastAudioId = $null
 $loop = 0
 $slow = @{}
 
@@ -360,7 +371,12 @@ while ($true) {
     try { $slow.network = Get-Network } catch { $slow.network = @{ type = 'none' } }
   }
   # Bluetooth devices: every 2 seconds (10 loops); the lookup takes ~0.1s.
-  if ($refreshSlow -or $loop % 10 -eq 0) {
+  # Also straight away when the sound output switches (headphones connecting),
+  # so the Bluetooth peek isn't up to 2 seconds behind.
+  $audioId = try { [IslandAudio]::GetDeviceId() } catch { $null }
+  $audioSwitched = $audioId -ne $lastAudioId
+  $lastAudioId = $audioId
+  if ($refreshSlow -or $audioSwitched -or $loop % 10 -eq 0) {
     try { $slow.btDevices = Get-BluetoothDevices } catch { $slow.btDevices = @() }
   }
   $loop++
@@ -374,6 +390,7 @@ while ($true) {
     radios     = $slow.radios
     network    = $slow.network
     btDevices  = @($slow.btDevices | Where-Object { $_ })  # PowerShell turns an empty list into $null; drop it
+    audioDevice = $audioId
   }
   try {
     $state.volume = [Math]::Round([IslandAudio]::GetVolume(), 2)

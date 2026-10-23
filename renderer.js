@@ -136,14 +136,32 @@ $('view-dots').addEventListener('click', (e) => {
 let pinned = false;
 const isExpanded = () => pill.classList.contains('expanded');
 
+// Opening is two steps: the island first stretches sideways a little, then
+// drops open. Skipped when it's tucked (it's already waited for the cursor).
+const STRETCH_MS = 320;
+let stretchTimer = null;
+
 function expand() {
-  if (!isExpanded()) setView(defaultView());
+  if (isExpanded() || stretchTimer) return;
   stopPeek();
+  if (pill.classList.contains('tucked')) return openNow();
+  pill.classList.add('stretch');
+  stretchTimer = setTimeout(openNow, STRETCH_MS);
+}
+
+function openNow() {
+  clearTimeout(stretchTimer);
+  stretchTimer = null;
+  pill.classList.remove('stretch');
+  setView(defaultView());
   pill.classList.add('expanded');
   reportRect();
 }
 
 function collapse() {
+  clearTimeout(stretchTimer);
+  stretchTimer = null;
+  pill.classList.remove('stretch');
   pinned = false;
   heldRect = null;
   pill.classList.remove('expanded');
@@ -397,7 +415,10 @@ function onSystemMessage(msg) {
 
   // Volume changed from outside the island (keyboard keys, other apps).
   const volumeChanged = prev.volume !== msg.volume || prev.muted !== msg.muted;
-  if (volumeChanged && msg.volume !== null && Date.now() - lastLocalVolumeChange > 1000) {
+  // A different output device (e.g. headphones connecting) has its own volume;
+  // that's not a volume change worth a peek (the Bluetooth peek covers it).
+  const deviceSwitched = prev.audioDevice !== msg.audioDevice;
+  if (volumeChanged && !deviceSwitched && msg.volume !== null && Date.now() - lastLocalVolumeChange > 1000) {
     peek(volumeIcon(msg.volume, msg.muted), msg.muted ? 0 : msg.volume,
       msg.muted ? 'Muted' : `${Math.round(msg.volume * 100)}%`);
   }

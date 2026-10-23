@@ -89,6 +89,9 @@ body {
 
 .pill.peeking { width: var(--peek-w); }
 
+/* First step of opening: a quick sideways stretch (see expand() in renderer.js). */
+.pill.stretch:not(.expanded) { width: calc(var(--collapsed-w) + 56px); }
+
 /* Tucked: a thin sliver while an app window is under the island. */
 .pill.tucked:not(.expanded):not(.peeking) {
   width: 160px;

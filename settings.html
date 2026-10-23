@@ -14,7 +14,10 @@
     <nav class="sidebar">
       <div class="brand">
         <img src="assets/icon.png" alt="">
-        <span>Dynamic Island</span>
+        <div>
+          <div class="brand-name">Dynamic Island</div>
+          <div class="brand-sub">Settings</div>
+        </div>
       </div>
       <button class="nav active" data-section="appearance"><span class="ic ic-purple"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" class="fill"/></svg></span>Appearance</button>
       <button class="nav" data-section="views"><span class="ic ic-blue"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/></svg></span>Views</button>
@@ -22,12 +25,27 @@
       <button class="nav" data-section="nowplaying"><span class="ic ic-pink"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>Now Playing</button>
       <button class="nav" data-section="weather"><span class="ic ic-cyan"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7 11a3.5 3.5 0 0 0 0 7z"/></svg></span>Weather</button>
       <button class="nav" data-section="system"><span class="ic ic-grey"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></span>System</button>
-      <p class="saved">Changes save automatically</p>
+      <p class="saved"><span class="dot"></span>Changes save automatically</p>
     </nav>
 
     <main>
+      <!-- ===== Appearance ===== -->
       <section class="pane active" data-section="appearance">
-        <h1>Appearance</h1>
+        <header class="hero">
+          <span class="ic ic-purple big"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" class="fill"/></svg></span>
+          <div><h1>Appearance</h1><p>Make the island yours. The preview updates as you go.</p></div>
+        </header>
+
+        <!-- Live preview of the collapsed island -->
+        <div class="preview">
+          <div class="screen-edge"></div>
+          <div id="mini" class="mini">
+            <span id="pv-left" class="mini-side"></span>
+            <span id="pv-time" class="mini-time"></span>
+            <span class="mini-side mini-bars"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+
         <div class="group">
           <div class="row">
             <div><div class="label">Background opacity</div><div class="hint">How see-through the island is.</div></div>
@@ -36,62 +54,73 @@
               <output id="opacity-value"></output>
             </div>
           </div>
-          <div class="row">
-            <div><div class="label">Accent colour</div><div class="hint">Used for the equalizer bars and highlights.</div></div>
-            <div class="control segmented" role="radiogroup">
-              <label><input type="radio" name="accent" value="album"> Album art</label>
-              <label><input type="radio" name="accent" value="fixed"> Fixed</label>
-              <input id="accent-color" type="color" title="Fixed accent colour">
+          <div class="row column">
+            <div class="row-head">
+              <div><div class="label">Accent colour</div><div class="hint">The equalizer bars and highlights.</div></div>
+              <div class="seg" data-key="accent">
+                <button data-value="album">Album art</button>
+                <button data-value="fixed">Custom</button>
+              </div>
+            </div>
+            <div id="swatches" class="swatches">
+              <input id="accent-color" type="color" title="Pick any colour">
             </div>
           </div>
           <div class="row">
-            <div><div class="label">Collapsed left side</div><div class="hint">What the small island shows on the left.</div></div>
-            <div class="control">
-              <select id="left-wing">
-                <option value="battery">Battery</option>
-                <option value="weather">Weather</option>
-                <option value="date">Date</option>
-              </select>
+            <div><div class="label">Left side shows</div><div class="hint">On the small island.</div></div>
+            <div class="seg" data-key="leftWing">
+              <button data-value="battery">Battery</button>
+              <button data-value="weather">Weather</button>
+              <button data-value="date">Date</button>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ===== Views ===== -->
       <section class="pane" data-section="views">
-        <h1>Views</h1>
-        <p class="intro">Scroll over the island to move between these, top to bottom. Now playing only appears while something is playing.</p>
+        <header class="hero">
+          <span class="ic ic-blue big"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/></svg></span>
+          <div><h1>Views</h1><p>Scroll over the island to flip through these, top to bottom.</p></div>
+        </header>
         <div class="group">
           <ul id="views" class="views"></ul>
         </div>
+        <p class="intro">Now playing only appears while something is playing.</p>
       </section>
 
+      <!-- ===== Auto-hide ===== -->
       <section class="pane" data-section="autohide">
-        <h1>Auto-hide</h1>
-        <p class="intro">The island tucks into a thin line over these apps so it doesn't cover their tabs. Rest the mouse on the line to open it.</p>
+        <header class="hero">
+          <span class="ic ic-orange big"><svg viewBox="0 0 24 24"><path d="M4 5h16M12 19V9m-4 4 4-4 4 4"/></svg></span>
+          <div><h1>Auto-hide</h1><p>Tucks into a thin line so it never covers your tabs. Rest the mouse on the line to open it.</p></div>
+        </header>
         <div class="group">
           <div class="row">
-            <div class="label">Tuck the island away</div>
-            <div class="control">
-              <select id="tuck-mode">
-                <option value="browsers">Over the apps below</option>
-                <option value="always">Over any app</option>
-                <option value="never">Never</option>
-              </select>
+            <div class="label">Tuck away</div>
+            <div class="seg" data-key="tuckMode">
+              <button data-value="browsers">Over these apps</button>
+              <button data-value="always">Over any app</button>
+              <button data-value="never">Never</button>
             </div>
           </div>
-          <div class="row column">
-            <label class="label" for="tuck-apps">Apps</label>
-            <textarea id="tuck-apps" rows="6" spellcheck="false"></textarea>
-            <div class="hint">One per line, as shown in Task Manager › Details, without ".exe".</div>
+          <div class="row column" id="apps-row">
+            <div id="chips" class="chips"></div>
+            <input id="add-app" type="text" placeholder="Add an app, e.g. discord, then press Enter" autocomplete="off" spellcheck="false">
+            <div class="hint">Names as shown in Task Manager › Details, without ".exe".</div>
           </div>
         </div>
       </section>
 
+      <!-- ===== Now Playing ===== -->
       <section class="pane" data-section="nowplaying">
-        <h1>Now Playing</h1>
+        <header class="hero">
+          <span class="ic ic-pink big"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
+          <div><h1>Now Playing</h1><p>Music, lyrics, and the full-screen view.</p></div>
+        </header>
         <div class="group">
           <div class="row">
-            <div><div class="label">Now Playing screen</div><div class="hint">The full-screen clock, album art and lyrics. Opens after 2 minutes idle while music plays, from the island, or with Ctrl + Alt + M.</div></div>
+            <div><div class="label">Now Playing screen</div><div class="hint">Full-screen clock, album art and lyrics. Opens after 2 minutes idle while music plays, from the island, or with Ctrl + Alt + M.</div></div>
             <div class="control"><input id="ambient" type="checkbox" class="switch"></div>
           </div>
           <div class="row">
@@ -104,20 +133,34 @@
         </div>
       </section>
 
+      <!-- ===== Weather ===== -->
       <section class="pane" data-section="weather">
-        <h1>Weather</h1>
+        <header class="hero">
+          <span class="ic ic-cyan big"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7 11a3.5 3.5 0 0 0 0 7z"/></svg></span>
+          <div><h1>Weather</h1><p>Shown in the overview, and on the island if you choose.</p></div>
+        </header>
+
+        <div id="weather-card" class="weather-card">
+          <div>
+            <div id="wc-place" class="wc-place"></div>
+            <div id="wc-label" class="wc-label"></div>
+          </div>
+          <div class="wc-right">
+            <div id="wc-temp" class="wc-temp"></div>
+            <div id="wc-range" class="wc-range"></div>
+          </div>
+        </div>
+
         <div class="group">
           <div class="row">
             <label class="label" for="weather-city">City</label>
             <div class="control"><input id="weather-city" type="text" placeholder="e.g. Lagos" autocomplete="off"></div>
           </div>
           <div class="row">
-            <label class="label" for="weather-units">Units</label>
-            <div class="control">
-              <select id="weather-units">
-                <option value="celsius">°C</option>
-                <option value="fahrenheit">°F</option>
-              </select>
+            <div class="label">Units</div>
+            <div class="seg" data-key="weatherUnits">
+              <button data-value="celsius">°C</button>
+              <button data-value="fahrenheit">°F</button>
             </div>
           </div>
         </div>
@@ -125,13 +168,25 @@
         <p class="intro">From Open-Meteo (free, no account). Only the city you type is sent. Leave it empty to turn weather off.</p>
       </section>
 
+      <!-- ===== System ===== -->
       <section class="pane" data-section="system">
-        <h1>System</h1>
+        <header class="hero">
+          <span class="ic ic-grey big"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></span>
+          <div><h1>System</h1><p>Startup, and handy shortcuts.</p></div>
+        </header>
         <div class="group">
           <div class="row">
             <div><div class="label">Start with Windows</div><div class="hint">Open the island automatically when you sign in.</div></div>
             <div class="control"><input id="startup" type="checkbox" class="switch"></div>
           </div>
+        </div>
+
+        <h2 class="subhead">Shortcuts</h2>
+        <div class="group">
+          <div class="row"><span>Open Settings</span><span class="keys"><kbd>Right-click</kbd> the island</span></div>
+          <div class="row"><span>Now Playing screen</span><span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>M</kbd></span></div>
+          <div class="row"><span>Close the island or Now Playing</span><span class="keys"><kbd>Esc</kbd></span></div>
+          <div class="row"><span>Pin the island open</span><span class="keys"><kbd>Click</kbd> it</span></div>
         </div>
         <p class="intro">Quit from the tray icon (bottom right of the taskbar).</p>
       </section>

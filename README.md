@@ -83,7 +83,7 @@ You'll get a **Start menu** entry, a **desktop shortcut**, and a proper uninstal
 
 | Do this | And this happens |
 |---|---|
-| **Hover** over the island | It grows. Move away and it shrinks back. |
+| **Hover** over the island | It stretches sideways for a moment, then drops open. Move away and it shrinks back. |
 | **Click** it | It stays open even when your mouse wanders off. Click it again (or anywhere else) to close it. |
 | **Scroll** over it while it's open | Flips to the next screen ("view"). It loops around, so you can't get lost. |
 | **Click a dot** on its right edge | Jumps straight to that view. |
@@ -180,16 +180,16 @@ A full-screen view that looks like a phone's lock screen: the date and a big fro
 
 ## Settings
 
-Open them from the **tray icon → Settings…**, or just **right-click the island**. Pick a section in the sidebar on the left. Everything saves automatically the moment you change it.
+Open them from the **tray icon → Settings…**, or just **right-click the island**. Pick a section in the sidebar on the left. Everything saves automatically the moment you change it. The Appearance section has a **live preview** of the island that updates as you change things.
 
 | Section | What you can change |
 |---|---|
-| **Appearance** | **Background opacity:** how see-through the island is (40–100%). **Accent colour:** taken from the album art, or one colour you choose. **Collapsed left side shows:** battery, weather or date. |
+| **Appearance** | **Background opacity:** how see-through the island is (40–100%). **Accent colour:** taken from the album art, or pick one of six colours (or any colour you like). **Left side shows:** battery, weather or date. |
 | **Views** | Turn each view on or off, and move it up or down the list. |
-| **Auto-hide** | When to tuck away (over listed apps, any app, or never), and which apps count. One name per line. |
+| **Auto-hide** | When to tuck away (over these apps, any app, or never), and which apps count: each app is a tag you can remove with ×; type a name and press Enter to add one. |
 | **Now Playing** | Turn the **Now Playing screen** on or off. **Lyrics timing** slider (up to 2 seconds either way): lyrics running late? Slide it **right**. Too early? Slide it **left**. |
-| **Weather** | Your **city** (press Enter to save) and **°C or °F**. It tells you if it found your city. If it didn't, try adding the country, like "Ikeja, Nigeria". Leave the city empty to turn weather off. |
-| **System** | **Start with Windows** (same switch as in the tray menu). |
+| **Weather** | Your **city** (press Enter to save) and **°C or °F**. Shows a live weather card once it finds your city. If it didn't, try adding the country, like "Ikeja, Nigeria". Leave the city empty to turn weather off. |
+| **System** | **Start with Windows** (same switch as in the tray menu), and a list of handy shortcuts. |
 
 ---
 
