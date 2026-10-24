@@ -214,6 +214,11 @@ ipcMain.on('settings:set', (_event, partial) => settingsStore.update(partial));
 ipcMain.on('settings:set-startup', (_event, on) => setStartWithWindows(on));
 ipcMain.on('settings:open', () => openSettings());
 
+// "Built by Phemmy" credit in Settings. Pages can
+// only ask for this one fixed link.
+const CREDIT_URL = 'https://www.instagram.com/oluwafemi_akinruntan/';
+ipcMain.on('credit:open', () => shell.openExternal(CREDIT_URL));
+
 settingsStore.onChange((current, previous) => {
   for (const w of [win, settingsWin, ambientWin]) if (w) w.webContents.send('settings:changed', current);
   if (!current.ambient) closeAmbient();

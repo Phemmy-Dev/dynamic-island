@@ -215,6 +215,7 @@ $('weather-city').addEventListener('change', (e) => api.set({ weatherCity: e.tar
 $('weather-city').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 $('startup').addEventListener('change', (e) => api.setStartWithWindows(e.target.checked));
 $('ambient').addEventListener('change', (e) => api.set({ ambient: e.target.checked }));
+$('credit').addEventListener('click', () => api.openCredit());
 $('idle-min').addEventListener('input', (e) => api.set({ ambientIdleMin: +e.target.value }));
 
 // Sidebar: show one section at a time.
