@@ -142,11 +142,11 @@ Scroll over the open island, or click the dots, to move between these. You can h
 
 A full-screen view that looks like a phone's lock screen: the date and a big frosted-glass clock, a large album cover, a frosted-glass music card with controls, and lyrics (synced when the song has them, otherwise scrollable text), all over a blurred copy of the album art.
 
-- **Opens by itself** after 2 minutes of not touching your PC (change this in Settings → Now Playing, 1–30 minutes), but only while music is *playing*. It never pops up over a full-screen video or game, or while your PC is locked.
+- **Opens by itself** after 2 minutes of not touching your PC (change this in Settings → Now Playing, 1–30 minutes), but only while music is *playing*. It stays away while you're **watching something**: whenever a video is playing anywhere (browsers and video apps tell Windows to keep the screen on, and the island listens for that), when the app that's playing is the window in front of you, over full-screen apps and games, and while your PC is locked.
 - **Open it yourself** with the screen button at the right of the island's music controls, or press **Ctrl + Alt + M** (press it again to close).
 - **Top-left buttons:** **✕** closes it; the **speech bubble** shows or hides the lyrics (remembered).
 - **Progress bar:** click or drag it to jump to any part of the song, just like on the island.
-- **To close it,** click the ✕, click anywhere outside the music card, or press **Esc**. Moving the mouse doesn't close it, so you can use the buttons.
+- **To close it,** click the ✕, click anywhere outside the music card, press **Esc**, or just **start typing**. Moving the mouse doesn't close it, so you can use the buttons. **Space** plays/pauses; arrow, volume and media keys don't close it.
 - **Don't want it?** Turn it off in Settings → Now Playing. That stops it opening by itself, disables Ctrl + Alt + M, and hides its button.
 - It *looks* like a lock screen but **doesn't lock your PC**. To actually lock it, press **Win + L**.
 

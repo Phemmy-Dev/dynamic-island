@@ -333,6 +333,15 @@ function openAmbient() {
   });
 }
 
+// Does a media app ID ("Spotify.exe", "Brave", "Brave._crx_...", or a store
+// app's "Publisher.App_hash!App") belong to the window in front?
+function isForegroundApp(appId, fg) {
+  if (!appId || !fg) return false;
+  if (appId.includes('!')) return appId === fg.appId;
+  // shortcut: apps with a hashed ID (Firefox) won't match by name; the keep-screen-on check covers their videos.
+  return appId.split('.')[0].toLowerCase() === fg.name;
+}
+
 function closeAmbient() {
   if (ambientWin) ambientWin.close();
 }
@@ -347,6 +356,9 @@ function checkIdleAmbient() {
   const sys = lastMessages.get('system');
   if (ambientWin || screenLocked || !media || media.status !== 'Playing') return;
   if (sys && sys.fullscreen) return;
+  // A video is playing somewhere (it keeps the screen on), or you're looking at the app that's playing.
+  if (sys && sys.displayRequired) return;
+  if (sys && [].concat(media.playingApps || []).some((app) => isForegroundApp(app, sys.foreground))) return;
   if (powerMonitor.getSystemIdleTime() >= settingsStore.get().ambientIdleMin * 60) openAmbient();
 }
 

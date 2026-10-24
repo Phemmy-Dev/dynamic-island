@@ -217,7 +217,15 @@ $('lyrics-toggle').addEventListener('click', () => {
   try { localStorage.setItem('ambientLyricsOff', lyricsOff ? '1' : '0'); } catch {}
   currentLine = -1;  // re-centre the current line when lyrics come back
 });
+// Typing closes it (you're getting back to work). Space plays/pauses like most
+// players; arrows, modifiers, media and volume keys don't count as typing.
+const KEEP_OPEN = /^(Arrow|Media|Audio|Volume|Shift|Control|Alt|Meta|CapsLock|Fn)/;
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') window.island.closeAmbient();
+  if (e.key === ' ') {
+    e.preventDefault();
+    window.media.send('toggle');
+  } else if (e.key === 'Escape' || !(e.ctrlKey || e.altKey || e.metaKey || KEEP_OPEN.test(e.key))) {
+    window.island.closeAmbient();
+  }
 });
 setTimeout(() => $('hint').classList.add('gone'), 4000);

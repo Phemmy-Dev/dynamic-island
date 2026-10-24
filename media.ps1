@@ -135,6 +135,9 @@ while ($true) {
         canNext     = $info.Controls.IsNextEnabled
         canToggle   = $info.Controls.IsPlayPauseToggleEnabled
         canSeek     = $info.Controls.IsPlaybackPositionEnabled
+        # All apps playing right now (e.g. Spotify AND a YouTube tab), so the
+        # Now Playing screen can tell if one of them is the window you're watching.
+        playingApps = @($manager.GetSessions() | Where-Object { $_.GetPlaybackInfo().PlaybackStatus -eq 'Playing' } | ForEach-Object { $_.SourceAppUserModelId })
         positionMs  = [long]$timeline.Position.TotalMilliseconds
         durationMs  = [long]$timeline.EndTime.TotalMilliseconds
         updatedAtMs = $timeline.LastUpdatedTime.ToUnixTimeMilliseconds()

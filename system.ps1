@@ -93,6 +93,46 @@ public static class IslandWindows {
   [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr hwnd);
   [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr hwnd);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string title);
+  [DllImport("kernel32.dll")] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
+  [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern int GetApplicationUserModelId(IntPtr process, ref uint length, StringBuilder id);
+  [DllImport("powrprof.dll")] static extern uint CallNtPowerInformation(int level, IntPtr inBuf, uint inLen, out uint outBuf, uint outLen);
+
+  // True while some app asks Windows to keep the screen on, which video
+  // players and browsers do while a video plays (music apps don't). Visible
+  // without admin rights for the modern request API that browsers use.
+  public static bool DisplayRequired() {
+    uint state;
+    return CallNtPowerInformation(16 /* SystemExecutionState */, IntPtr.Zero, 0, out state, 4) == 0 && (state & 2 /* ES_DISPLAY_REQUIRED */) != 0;
+  }
+
+  // Process id behind the window in front. Store apps (Netflix, Media Player)
+  // live inside an ApplicationFrameHost window; their real process owns its child.
+  public static uint ForegroundPid() {
+    IntPtr hwnd = GetForegroundWindow();
+    if (hwnd == IntPtr.Zero) return 0;
+    var name = new StringBuilder(256);
+    GetClassName(hwnd, name, 256);
+    if (name.ToString() == "ApplicationFrameWindow") {
+      IntPtr core = FindWindowEx(hwnd, IntPtr.Zero, "Windows.UI.Core.CoreWindow", null);
+      if (core != IntPtr.Zero) hwnd = core;
+    }
+    uint pid;
+    GetWindowThreadProcessId(hwnd, out pid);
+    return pid;
+  }
+
+  // App ID of a store app's process (e.g. "4DF9E0F8.Netflix_...!Netflix.App"), or null.
+  public static string AppIdOf(uint pid) {
+    IntPtr h = OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
+    if (h == IntPtr.Zero) return null;
+    try {
+      uint len = 256;
+      var id = new StringBuilder((int)len);
+      return GetApplicationUserModelId(h, ref len, id) == 0 ? id.ToString() : null;
+    } finally { CloseHandle(h); }
+  }
 
   // True when the app in front covers the whole screen (full-screen video,
   // game, slideshow). Maximized windows don't count: with an auto-hiding
@@ -401,6 +441,15 @@ while ($true) {
     $sb = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
     $state.fullscreen = [IslandWindows]::ForegroundIsFullscreen($ownPid, $sb.Left, $sb.Top, $sb.Right, $sb.Bottom)
   } catch { $state.fullscreen = $false }
+  # For the Now Playing screen: is a video keeping the screen on, and which app is in front?
+  try { $state.displayRequired = [IslandWindows]::DisplayRequired() } catch { $state.displayRequired = $false }
+  try {
+    $fgPid = [IslandWindows]::ForegroundPid()
+    if ($fgPid -and $fgPid -ne $ownPid) {
+      if (-not $processNames.ContainsKey($fgPid)) { $processNames[$fgPid] = [System.Diagnostics.Process]::GetProcessById($fgPid).ProcessName.ToLower() }
+      $state.foreground = @{ name = $processNames[$fgPid]; appId = [IslandWindows]::AppIdOf($fgPid) }
+    }
+  } catch {}
 
   $json = $state | ConvertTo-Json -Compress
   if ($json -ne $lastJson) {
